@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
@@ -102,6 +106,107 @@
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-ca-certificate</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/shell/certs-manager/certs_manager.sh</executable> <!-- Comando da eseguire, ad esempio /bin/sh per shell script -->
+                            <arguments>
+                                <argument>generate-ca</argument>
+                                <argument>--working-dir</argument>
+                                <argument>${project.basedir}/src/main/resources/certs</argument>
+                                <argument>--private-key-file</argument>
+                                <argument>ca_private_key.pem</argument>
+                                <argument>--ca-certificate-file</argument>
+                                <argument>ca_cert.pem</argument>
+                                <argument>--validity-days</argument>
+                                <argument>1825</argument>
+                                <argument>--country</argument>
+                                <argument>IT</argument>
+                                <argument>--state</argument>
+                                <argument>Italy</argument>
+                                <argument>--locality</argument>
+                                <argument>Bronte (CT)</argument>
+                                <argument>--organization</argument>
+                                <argument>Dontesta</argument>
+                                <argument>--organizational-unit</argument>
+                                <argument>IT Labs</argument>
+                                <argument>--common-name</argument>
+                                <argument>Dontesta CA</argument>
+                                <argument>--output-p12-file</argument>
+                                <argument>ca_cert.p12</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-server-certificate</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/shell/certs-manager/certs_manager.sh</executable>
+                            <arguments>
+                                <argument>generate-server</argument>
+                                <argument>--working-dir</argument>
+                                <argument>${project.basedir}/src/main/resources/certs</argument>
+                                <argument>--private-key-file</argument>
+                                <argument>server_private_key.pem</argument>
+                                <argument>--csr-file</argument>
+                                <argument>server_csr.pem</argument>
+                                <argument>--server-cert-file</argument>
+                                <argument>server_cert.pem</argument>
+                                <argument>--ca-cert-file</argument>
+                                <argument>ca_cert.pem</argument>
+                                <argument>--ca-key-file</argument>
+                                <argument>ca_private_key.pem</argument>
+                                <argument>--ca-key-password</argument>
+                                <argument></argument>
+                                <argument>--validity-days</argument>
+                                <argument>365</argument>
+                                <argument>--country</argument>
+                                <argument>IT</argument>
+                                <argument>--state</argument>
+                                <argument>Italy</argument>
+                                <argument>--locality</argument>
+                                <argument>Bronte (CT)</argument>
+                                <argument>--organization</argument>
+                                <argument>Dontesta</argument>
+                                <argument>--organizational-unit</argument>
+                                <argument>IT Labs</argument>
+                                <argument>--common-name</argument>
+                                <argument>rd.quarkus.dontesta.it</argument>
+                                <argument>--san-domains</argument>
+                                <argument>DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it</argument>
+                                <argument>--output-p12-file</argument>
+                                <argument>server_cert.p12</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-cert-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>rm</executable>
+                            <arguments>
+                                <argument>-rf</argument>
+                                <argument>${project.basedir}/src/main/resources/certs</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
