@@ -227,6 +227,11 @@ generate-ca)
   CA_CERTIFICATE_FILE="${PARAMS["WORKING_DIR"]}/${PARAMS["CA_CERTIFICATE_FILE"]}"
   OUTPUT_P12_FILE="${PARAMS["OUTPUT_P12_FILE"]:+${PARAMS["WORKING_DIR"]}/${PARAMS["OUTPUT_P12_FILE"]}}"
 
+  if [ -f "$CA_CERTIFICATE_FILE" ]; then
+    echo -e "${YELLOW}Certificate file $CA_CERTIFICATE_FILE already exists. Skipping creation.${NC}"
+    exit 0
+  fi
+
   generate_private_key "$PRIVATE_KEY_FILE"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
   generate_ca_certificate "$PRIVATE_KEY_FILE" "$CA_CERTIFICATE_FILE" "${PARAMS["VALIDITY_DAYS"]}" "${PARAMS["COUNTRY"]}" "${PARAMS["STATE"]}" "${PARAMS["LOCALITY"]}" "${PARAMS["ORGANIZATION"]}" "${PARAMS["ORGANIZATIONAL_UNIT"]}" "${PARAMS["COMMON_NAME"]}" "$PRIVATE_KEY_PASSWORD"
@@ -251,6 +256,11 @@ generate-server)
   CA_KEY_FILE="${PARAMS["WORKING_DIR"]}/${PARAMS["CA_KEY_FILE"]}"
   SERVER_CERT_FILE="${PARAMS["WORKING_DIR"]}/${PARAMS["SERVER_CERT_FILE"]}"
   OUTPUT_P12_FILE="${PARAMS["OUTPUT_P12_FILE"]:+${PARAMS["WORKING_DIR"]}/${PARAMS["OUTPUT_P12_FILE"]}}"
+
+  if [ -f "$SERVER_CERT_FILE" ]; then
+    echo -e "${YELLOW}Certificate file $SERVER_CERT_FILE already exists. Skipping creation.${NC}"
+    exit 0
+  fi
 
   generate_private_key "$PRIVATE_KEY_FILE"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
@@ -286,6 +296,11 @@ generate-client)
   CA_KEY_FILE="${PARAMS["WORKING_DIR"]}/${PARAMS["CA_KEY_FILE"]}"
   CLIENT_CERT_FILE="${PARAMS["WORKING_DIR"]}/${PARAMS["CLIENT_CERT_FILE"]}"
   OUTPUT_P12_FILE="${PARAMS["OUTPUT_P12_FILE"]:+${PARAMS["WORKING_DIR"]}/${PARAMS["OUTPUT_P12_FILE"]}}"
+
+  if [ -f "$CLIENT_CERT_FILE" ]; then
+    echo -e "${YELLOW}Certificate file $CLIENT_CERT_FILE already exists. Skipping creation.${NC}"
+    exit 0
+  fi
 
   generate_private_key "$PRIVATE_KEY_FILE"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
