@@ -43,8 +43,14 @@
 #
 # Author: Antonio Musarra <antonio.musarra[at]gmail.com>
 
+# Configuration to enable debugging
+if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
+
+# Get the directory of the script
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
 # Source common functions
-source _common.sh
+source "$SCRIPT_DIR/_common.sh"
 
 # Check if OpenSSL is installed and the version is correct
 check_openssl_installed
@@ -234,7 +240,7 @@ generate-ca)
   fi
   ;;
 generate-server)
-  if [ -z "${PARAMS["PRIVATE_KEY_FILE"]}" ] || [ -z "${PARAMS["CSR_FILE"]}" ] || [ -z "${PARAMS["SERVER_CERT_FILE"]}" ] || [ -z "${PARAMS["VALIDITY_DAYS"]}" ] || [ -z "${PARAMS["CA_CERT_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ] || [ -z "${PARAMS["COUNTRY"]}" ] || [ -z "${PARAMS["STATE"]}" ] || [ -z "${PARAMS["LOCALITY"]}" ] || [ -z "${PARAMS["ORGANIZATION"]}" ] || [ -z "${PARAMS["ORGANIZATIONAL_UNIT"]}" ] || [ -z "${PARAMS["COMMON_NAME"]}" ]; then
+  if [ -z "${PARAMS["PRIVATE_KEY_FILE"]}" ] || [ -z "${PARAMS["CSR_FILE"]}" ] || [ -z "${PARAMS["SERVER_CERT_FILE"]}" ] || [ -z "${PARAMS["VALIDITY_DAYS"]}" ] || [ -z "${PARAMS["CA_CERT_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_FILE"]}" ] || [ -z "${PARAMS["COUNTRY"]}" ] || [ -z "${PARAMS["STATE"]}" ] || [ -z "${PARAMS["LOCALITY"]}" ] || [ -z "${PARAMS["ORGANIZATION"]}" ] || [ -z "${PARAMS["ORGANIZATIONAL_UNIT"]}" ] || [ -z "${PARAMS["COMMON_NAME"]}" ]; then
     echo -e "${RED}Missing required parameters for generate-server${NC}"
     print_usage
     exit 1
@@ -248,12 +254,17 @@ generate-server)
 
   generate_private_key "$PRIVATE_KEY_FILE"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
+  if [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ]; then
+    CA_KEY_PASSWORD=$(get_private_key_password "$CA_KEY_FILE")
+  else
+    CA_KEY_PASSWORD="${PARAMS["CA_KEY_PASSWORD"]}"
+  fi
   if [ -n "${PARAMS["SAN_DOMAINS"]}" ]; then
     CONFIG_FILE="${PARAMS["WORKING_DIR"]}/openssl.cnf"
     generate_openssl_server_certificate_config "$CONFIG_FILE" "${PARAMS["SAN_DOMAINS"]}"
   fi
   generate_csr "$PRIVATE_KEY_FILE" "$CSR_FILE" "${PARAMS["COUNTRY"]}" "${PARAMS["STATE"]}" "${PARAMS["LOCALITY"]}" "${PARAMS["ORGANIZATION"]}" "${PARAMS["ORGANIZATIONAL_UNIT"]}" "${PARAMS["COMMON_NAME"]}" "$PRIVATE_KEY_PASSWORD" "$CONFIG_FILE"
-  generate_server_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$SERVER_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "${PARAMS["CA_KEY_PASSWORD"]}" "$CONFIG_FILE"
+  generate_server_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$SERVER_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "$CA_KEY_PASSWORD" "$CONFIG_FILE"
 
   verify_certificate_issuer "${SERVER_CERT_FILE}"
   verify_certificate_serial "${SERVER_CERT_FILE}"
@@ -264,7 +275,7 @@ generate-server)
   fi
   ;;
 generate-client)
-  if [ -z "${PARAMS["PRIVATE_KEY_FILE"]}" ] || [ -z "${PARAMS["CSR_FILE"]}" ] || [ -z "${PARAMS["CLIENT_CERT_FILE"]}" ] || [ -z "${PARAMS["VALIDITY_DAYS"]}" ] || [ -z "${PARAMS["CA_CERT_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ] || [ -z "${PARAMS["COUNTRY"]}" ] || [ -z "${PARAMS["STATE"]}" ] || [ -z "${PARAMS["LOCALITY"]}" ] || [ -z "${PARAMS["ORGANIZATION"]}" ] || [ -z "${PARAMS["ORGANIZATIONAL_UNIT"]}" ] || [ -z "${PARAMS["COMMON_NAME"]}" ]; then
+  if [ -z "${PARAMS["PRIVATE_KEY_FILE"]}" ] || [ -z "${PARAMS["CSR_FILE"]}" ] || [ -z "${PARAMS["CLIENT_CERT_FILE"]}" ] || [ -z "${PARAMS["VALIDITY_DAYS"]}" ] || [ -z "${PARAMS["CA_CERT_FILE"]}" ] || [ -z "${PARAMS["CA_KEY_FILE"]}" ] || [ -z "${PARAMS["COUNTRY"]}" ] || [ -z "${PARAMS["STATE"]}" ] || [ -z "${PARAMS["LOCALITY"]}" ] || [ -z "${PARAMS["ORGANIZATION"]}" ] || [ -z "${PARAMS["ORGANIZATIONAL_UNIT"]}" ] || [ -z "${PARAMS["COMMON_NAME"]}" ]; then
     echo -e "${RED}Missing required parameters for generate-client${NC}"
     print_usage
     exit 1
@@ -278,16 +289,21 @@ generate-client)
 
   generate_private_key "$PRIVATE_KEY_FILE"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
+  if [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ]; then
+    CA_KEY_PASSWORD=$(get_private_key_password "$CA_KEY_FILE")
+  else
+    CA_KEY_PASSWORD="${PARAMS["CA_KEY_PASSWORD"]}"
+  fi
   generate_csr "$PRIVATE_KEY_FILE" "$CSR_FILE" "${PARAMS["COUNTRY"]}" "${PARAMS["STATE"]}" "${PARAMS["LOCALITY"]}" "${PARAMS["ORGANIZATION"]}" "${PARAMS["ORGANIZATIONAL_UNIT"]}" "${PARAMS["COMMON_NAME"]}" "$PRIVATE_KEY_PASSWORD"
   if [ -n "${PARAMS["EXTENSIONS_FILE"]}" ]; then
     TEMP_EXTENSIONS_FILE=$(mktemp)
     cp "${PARAMS["EXTENSIONS_FILE"]}" "$TEMP_EXTENSIONS_FILE"
     sed -i '' "s/\${ext_cert_role}/${PARAMS["EXT_CERT_ROLE"]}/g" "$TEMP_EXTENSIONS_FILE"
     sed -i '' "s/\${ext_cert_device_id}/${PARAMS["EXT_CERT_DEVICE_ID"]}/g" "$TEMP_EXTENSIONS_FILE"
-    generate_client_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$CLIENT_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "${PARAMS["CA_KEY_PASSWORD"]}" "$TEMP_EXTENSIONS_FILE"
+    generate_client_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$CLIENT_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "$CA_KEY_PASSWORD" "$TEMP_EXTENSIONS_FILE"
     rm "$TEMP_EXTENSIONS_FILE"
   else
-    generate_client_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$CLIENT_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "${PARAMS["CA_KEY_PASSWORD"]}"
+    generate_client_certificate "$CSR_FILE" "${CA_CERT_FILE}" "${CA_KEY_FILE}" "$CLIENT_CERT_FILE" "${PARAMS["VALIDITY_DAYS"]}" "$CA_KEY_PASSWORD"
   fi
 
   verify_certificate_issuer "${CLIENT_CERT_FILE}"
