@@ -15,6 +15,38 @@
         <quarkus.platform.version>3.14.1</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.3.1</surefire-plugin.version>
+
+        <!--
+            Configuration properties for the certificates generation: the Certification Authority and Server Certificates
+            See the certificates-manager.sh (src/main/shell/certs-manager/certs_manager.sh) script for more details
+            and the configuration of the Maven exec plugin to generate the certificates.
+        -->
+        <certificates.dir>${project.basedir}/src/main/resources/certs</certificates.dir>
+        <certificates.ca.private.key.file>ca_private_key.pem</certificates.ca.private.key.file>
+        <certificates.ca.cert.file>ca_cert.pem</certificates.ca.cert.file>
+        <certificates.ca.validity.days>1825</certificates.ca.validity.days>
+        <certificates.ca.country>IT</certificates.ca.country>
+        <certificates.ca.state>Italy</certificates.ca.state>
+        <certificates.ca.locality>Bronte (CT)</certificates.ca.locality>
+        <certificates.ca.organization>Dontesta</certificates.ca.organization>
+        <certificates.ca.organizational.unit>IT Labs</certificates.ca.organizational.unit>
+        <certificates.ca.common.name>Dontesta CA</certificates.ca.common.name>
+        <certificates.ca.output.p12.file>ca_cert.p12</certificates.ca.output.p12.file>
+        <certificates.server.private.key.file>server_private_key.pem</certificates.server.private.key.file>
+        <certificates.server.csr.file>server_csr.pem</certificates.server.csr.file>
+        <certificates.server.cert.file>server_cert.pem</certificates.server.cert.file>
+        <certificates.server.ca.cert.file>${certificates.ca.cert.file}</certificates.server.ca.cert.file>
+        <certificates.server.ca.key.file>${certificates.ca.private.key.file}</certificates.server.ca.key.file>
+        <certificates.server.ca.key.password/>
+        <certificates.server.validity.days>365</certificates.server.validity.days>
+        <certificates.server.country>IT</certificates.server.country>
+        <certificates.server.state>Italy</certificates.server.state>
+        <certificates.server.locality>Bronte (CT)</certificates.server.locality>
+        <certificates.server.organization>Dontesta</certificates.server.organization>
+        <certificates.server.organizational.unit>IT Labs</certificates.server.organizational.unit>
+        <certificates.server.common.name>rd.quarkus.dontesta.it</certificates.server.common.name>
+        <certificates.server.san.domains>DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it</certificates.server.san.domains>
+        <certificates.server.output.p12.file>server_cert.p12</certificates.server.output.p12.file>
     </properties>
 
     <dependencyManagement>
@@ -123,27 +155,27 @@
                             <arguments>
                                 <argument>generate-ca</argument>
                                 <argument>--working-dir</argument>
-                                <argument>${project.basedir}/src/main/resources/certs</argument>
+                                <argument>${certificates.dir}</argument>
                                 <argument>--private-key-file</argument>
-                                <argument>ca_private_key.pem</argument>
+                                <argument>${certificates.ca.private.key.file}</argument>
                                 <argument>--ca-certificate-file</argument>
-                                <argument>ca_cert.pem</argument>
+                                <argument>${certificates.ca.cert.file}</argument>
                                 <argument>--validity-days</argument>
-                                <argument>1825</argument>
+                                <argument>${certificates.ca.validity.days}</argument>
                                 <argument>--country</argument>
-                                <argument>IT</argument>
+                                <argument>${certificates.ca.country}</argument>
                                 <argument>--state</argument>
-                                <argument>Italy</argument>
+                                <argument>${certificates.ca.state}</argument>
                                 <argument>--locality</argument>
-                                <argument>Bronte (CT)</argument>
+                                <argument>${certificates.ca.locality}</argument>
                                 <argument>--organization</argument>
-                                <argument>Dontesta</argument>
+                                <argument>${certificates.ca.organization}</argument>
                                 <argument>--organizational-unit</argument>
-                                <argument>IT Labs</argument>
+                                <argument>${certificates.ca.organizational.unit}</argument>
                                 <argument>--common-name</argument>
-                                <argument>Dontesta CA</argument>
+                                <argument>${certificates.ca.common.name}</argument>
                                 <argument>--output-p12-file</argument>
-                                <argument>ca_cert.p12</argument>
+                                <argument>${certificates.ca.output.p12.file}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -160,35 +192,35 @@
                                 <argument>--working-dir</argument>
                                 <argument>${project.basedir}/src/main/resources/certs</argument>
                                 <argument>--private-key-file</argument>
-                                <argument>server_private_key.pem</argument>
+                                <argument>${certificates.server.private.key.file}</argument>
                                 <argument>--csr-file</argument>
-                                <argument>server_csr.pem</argument>
+                                <argument>${certificates.server.csr.file}</argument>
                                 <argument>--server-cert-file</argument>
-                                <argument>server_cert.pem</argument>
+                                <argument>${certificates.server.cert.file}</argument>
                                 <argument>--ca-cert-file</argument>
-                                <argument>ca_cert.pem</argument>
+                                <argument>${certificates.server.ca.cert.file}</argument>
                                 <argument>--ca-key-file</argument>
-                                <argument>ca_private_key.pem</argument>
+                                <argument>${certificates.server.ca.key.file}</argument>
                                 <argument>--ca-key-password</argument>
-                                <argument></argument>
+                                <argument>${certificates.server.ca.key.password}</argument>
                                 <argument>--validity-days</argument>
-                                <argument>365</argument>
+                                <argument>${certificates.server.validity.days}</argument>
                                 <argument>--country</argument>
-                                <argument>IT</argument>
+                                <argument>${certificates.server.country}</argument>
                                 <argument>--state</argument>
-                                <argument>Italy</argument>
+                                <argument>${certificates.server.state}</argument>
                                 <argument>--locality</argument>
-                                <argument>Bronte (CT)</argument>
+                                <argument>${certificates.server.locality}</argument>
                                 <argument>--organization</argument>
-                                <argument>Dontesta</argument>
+                                <argument>${certificates.server.organization}</argument>
                                 <argument>--organizational-unit</argument>
-                                <argument>IT Labs</argument>
+                                <argument>${certificates.server.organizational.unit}</argument>
                                 <argument>--common-name</argument>
-                                <argument>rd.quarkus.dontesta.it</argument>
+                                <argument>${certificates.server.common.name}</argument>
                                 <argument>--san-domains</argument>
-                                <argument>DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it</argument>
+                                <argument>${certificates.server.san.domains}</argument>
                                 <argument>--output-p12-file</argument>
-                                <argument>server_cert.p12</argument>
+                                <argument>${certificates.server.output.p12.file}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -202,7 +234,7 @@
                             <executable>rm</executable>
                             <arguments>
                                 <argument>-rf</argument>
-                                <argument>${project.basedir}/src/main/resources/certs</argument>
+                                <argument>${certificates.dir}</argument>
                             </arguments>
                         </configuration>
                     </execution>
