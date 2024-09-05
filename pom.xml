@@ -27,8 +27,8 @@
         <certificates.ca.cert.file>ca_cert.pem</certificates.ca.cert.file>
         <certificates.ca.validity.days>1825</certificates.ca.validity.days>
         <certificates.ca.country>IT</certificates.ca.country>
-        <certificates.ca.state>Italy</certificates.ca.state>
-        <certificates.ca.locality>Bronte (CT)</certificates.ca.locality>
+        <certificates.ca.state>Catania</certificates.ca.state>
+        <certificates.ca.locality>Bronte</certificates.ca.locality>
         <certificates.ca.organization>Dontesta</certificates.ca.organization>
         <certificates.ca.organizational.unit>IT Labs</certificates.ca.organizational.unit>
         <certificates.ca.common.name>Dontesta CA</certificates.ca.common.name>
@@ -41,8 +41,8 @@
         <certificates.server.ca.key.password/>
         <certificates.server.validity.days>365</certificates.server.validity.days>
         <certificates.server.country>IT</certificates.server.country>
-        <certificates.server.state>Italy</certificates.server.state>
-        <certificates.server.locality>Bronte (CT)</certificates.server.locality>
+        <certificates.server.state>Catania</certificates.server.state>
+        <certificates.server.locality>Bronte</certificates.server.locality>
         <certificates.server.organization>Dontesta</certificates.server.organization>
         <certificates.server.organizational.unit>IT Labs</certificates.server.organizational.unit>
         <certificates.server.common.name>rd.quarkus.dontesta.it</certificates.server.common.name>
