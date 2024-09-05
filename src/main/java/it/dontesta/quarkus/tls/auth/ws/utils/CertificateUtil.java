@@ -8,7 +8,13 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.Base64;
+import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1String;
 
 /**
  * Utility class for converting X509Certificates to different formats.
@@ -70,6 +76,59 @@ public class CertificateUtil {
       throw new CertificateConversionException("Failed to convert X509Certificate to PEM format",
           e);
     }
+  }
+
+  /**
+   * Decodes an extension value from a byte array.
+   * This method assumes the extension value is an ASN.1 Octet String containing an ASN.1 String
+   * (e.g., UTF8String, PrintableString, etc.).
+   *
+   * @param extensionValue The byte array containing the extension value.
+   * @return The decoded extension value as a String, or null if decoding fails.
+   * @throws CertificateConversionException If an error occurs during decoding.
+   */
+  public static String decodeExtensionValue(byte[] extensionValue) {
+    try (ASN1InputStream asn1InputStream = new ASN1InputStream(extensionValue)) {
+      ASN1Primitive asn1Primitive = asn1InputStream.readObject();
+      if (asn1Primitive instanceof ASN1OctetString octetString) {
+        try (ASN1InputStream octetStream = new ASN1InputStream(octetString.getOctets())) {
+          ASN1Primitive octetPrimitive = octetStream.readObject();
+          if (octetPrimitive instanceof ASN1String asn1String) {
+            return asn1String.getString();
+          }
+        }
+      }
+    } catch (IOException ioException) {
+      throw new CertificateConversionException("Failed to decode extension value", ioException);
+    }
+    return null;
+  }
+
+  /**
+   * Extracts the Common Name (CN) from the subject of the given X509Certificate.
+   *
+   * @param cert The X509Certificate from which to extract the Common Name.
+   * @return The Common Name (CN) as a String, or null if the CN is not found.
+   */
+  public static String getCommonName(X509Certificate cert) {
+
+    if (cert == null) {
+      throw new NullPointerException("Certificate is null");
+    }
+
+    X500Principal principal = cert.getSubjectX500Principal();
+
+    if (principal == null) {
+      return null;
+    }
+
+    String dn = principal.getName();
+    return Arrays.stream(dn.split(","))
+        .map(String::trim)
+        .filter(part -> part.startsWith("CN=") || part.startsWith("cn="))
+        .map(part -> part.substring(3))
+        .findFirst()
+        .orElse(null);
   }
 
   /**

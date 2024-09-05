@@ -17,6 +17,8 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.3.1</surefire-plugin.version>
 
+        <bcprov-jdk18on.version>1.78.1</bcprov-jdk18on.version>
+
         <!--
             Configuration properties for the certificates generation: the Certification Authority and Server Certificates
             See the certificates-manager.sh (src/main/shell/certs-manager/certs_manager.sh) script for more details
@@ -89,6 +91,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5-mockito</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bcprov-jdk18on.version}</version>
         </dependency>
     </dependencies>
 

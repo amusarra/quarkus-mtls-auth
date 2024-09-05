@@ -62,6 +62,38 @@ public class ConnectionInfoResourceEndPoint {
   }
 
   /**
+   * Extracts custom extensions from the X509Certificate.
+   * <p>
+   *   The custom extensions are identified by the following Object Identifiers (OIDs):
+   *   <ul>
+   *     <li>1.3.6.1.4.1.12345.1 = ASN1:UTF8String:Role=${ext_cert_role}</li>
+   *     <li>1.3.6.1.4.1.12345.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}</li>
+   *   </ul>
+   *  </p>
+   *
+   *  <p>
+   *    You can see the custom extensions in the ssl_extensions.cnf file
+   *    located in the src/main/resources directory.
+   *  </p>
+   * @param cert The X509Certificate.
+   * @return A map containing the custom extensions.
+   */
+  private Map<String, String> getCustomExtensions(X509Certificate cert) {
+    Map<String, String> customExtensions = new HashMap<>();
+    byte[] roleExtension = cert.getExtensionValue("1.3.6.1.4.1.12345.1");
+    byte[] deviceIdExtension = cert.getExtensionValue("1.3.6.1.4.1.12345.2");
+
+    if (roleExtension != null) {
+      customExtensions.put("role", CertificateUtil.decodeExtensionValue(roleExtension));
+    }
+    if (deviceIdExtension != null) {
+      customExtensions.put("deviceId", CertificateUtil.decodeExtensionValue(deviceIdExtension));
+    }
+
+    return customExtensions;
+  }
+
+  /**
    * Retrieves the request headers from the HttpServerRequest.
    *
    * @param request The HttpServerRequest object.
@@ -125,6 +157,7 @@ public class ConnectionInfoResourceEndPoint {
   private void populateCertInfo(Map<String, Object> certInfo, X509Certificate cert)
       throws CertificateParsingException {
     certInfo.put("certSubject", cert.getSubjectX500Principal().getName());
+    certInfo.put("certCommonName", CertificateUtil.getCommonName(cert));
     certInfo.put("certIssuer", cert.getIssuerX500Principal().getName());
     certInfo.put("certSerialNumber", cert.getSerialNumber().toString());
     certInfo.put("notBefore", cert.getNotBefore().toString());
@@ -133,5 +166,6 @@ public class ConnectionInfoResourceEndPoint {
     certInfo.put("keySize", CertificateUtil.getKeySize(cert));
     certInfo.put("subjectAlternativeNames", cert.getSubjectAlternativeNames());
     certInfo.put("certPEM", CertificateUtil.convertToBase64(cert));
+    certInfo.put("customExtensions", getCustomExtensions(cert));
   }
 }
