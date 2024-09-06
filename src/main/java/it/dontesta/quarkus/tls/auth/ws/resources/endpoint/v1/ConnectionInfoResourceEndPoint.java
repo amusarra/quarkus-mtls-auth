@@ -4,6 +4,8 @@ import io.quarkus.security.credential.CertificateCredential;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
+import it.dontesta.quarkus.tls.auth.ws.security.identity.AttributesAugmentor;
+import it.dontesta.quarkus.tls.auth.ws.security.identity.RolesAugmentor;
 import it.dontesta.quarkus.tls.auth.ws.utils.CertificateUtil;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -107,8 +109,8 @@ public class ConnectionInfoResourceEndPoint {
    */
   private Map<String, String> getCustomExtensions(X509Certificate cert) {
     Map<String, String> customExtensions = new HashMap<>();
-    byte[] roleExtension = cert.getExtensionValue("1.3.6.1.4.1.12345.1");
-    byte[] deviceIdExtension = cert.getExtensionValue("1.3.6.1.4.1.12345.2");
+    byte[] roleExtension = cert.getExtensionValue(RolesAugmentor.OID_ROLES);
+    byte[] deviceIdExtension = cert.getExtensionValue(AttributesAugmentor.OID_DEVICE_ID);
 
     if (roleExtension != null) {
       customExtensions.put("role", CertificateUtil.decodeExtensionValue(roleExtension));
