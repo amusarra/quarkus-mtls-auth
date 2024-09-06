@@ -50,7 +50,7 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
     return Uni.createFrom().item(build(identity));
   }
 
-  private Map<String, String> extractAttributesFromCertificate(X509Certificate certificate) {
+  protected Map<String, String> extractAttributesFromCertificate(X509Certificate certificate) {
     Map<String, String> attributes = new HashMap<>();
 
     try {

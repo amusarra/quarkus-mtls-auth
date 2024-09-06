@@ -179,6 +179,6 @@ public class CertificateUtil {
    * @see <a href="https://rules.sonarsource.com/java/RSPEC-1118">SonarLint java:S1118 rule</a>
    */
   private CertificateUtil() {
-    throw new IllegalStateException("Utility class");
+    throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
   }
 }

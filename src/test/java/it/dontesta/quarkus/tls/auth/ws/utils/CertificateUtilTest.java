@@ -14,6 +14,8 @@ import it.dontesta.quarkus.tls.auth.ws.exception.CertificateConversionException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
@@ -48,6 +50,13 @@ class CertificateUtilTest {
   void getKeySize(X509Certificate cert, int expectedKeySize) {
     int keySize = CertificateUtil.getKeySize(cert);
     assertEquals(expectedKeySize, keySize);
+  }
+
+  @Test
+  void getCommonName_nullCertificate_throwsNullPointerException() {
+    assertThrows(NullPointerException.class, () -> {
+      CertificateUtil.getCommonName(null);
+    });
   }
 
   @Test
@@ -161,6 +170,17 @@ class CertificateUtilTest {
         });
 
     assertEquals("Failed to write PEM certificate to file", exception.getMessage());
+  }
+
+  @Test
+  void testCertificateUtilPrivateConstructor() throws Exception {
+    Constructor<CertificateUtil> constructor = CertificateUtil.class.getDeclaredConstructor();
+    constructor.setAccessible(true);
+
+    InvocationTargetException exception =
+        assertThrows(InvocationTargetException.class, constructor::newInstance);
+    assertEquals("This is a utility class and cannot be instantiated",
+        exception.getTargetException().getMessage());
   }
 
   private static Stream<Arguments> provideCertificatesForCommonName() {

@@ -61,7 +61,7 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
    * @param certificate the X509 certificate from which to extract roles
    * @return a set of roles extracted from the certificate
    */
-  private Set<String> extractRolesFromCertificate(X509Certificate certificate) {
+  protected Set<String> extractRolesFromCertificate(X509Certificate certificate) {
     Set<String> roles = new HashSet<>();
 
     try {
