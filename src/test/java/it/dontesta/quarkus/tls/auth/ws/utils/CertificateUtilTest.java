@@ -54,9 +54,7 @@ class CertificateUtilTest {
 
   @Test
   void getCommonName_nullCertificate_throwsNullPointerException() {
-    assertThrows(NullPointerException.class, () -> {
-      CertificateUtil.getCommonName(null);
-    });
+    assertThrows(NullPointerException.class, () -> CertificateUtil.getCommonName(null));
   }
 
   @Test
@@ -78,9 +76,8 @@ class CertificateUtilTest {
     when(mockCert.getEncoded()).thenThrow(new CertificateEncodingException("Encoding error"));
 
     CertificateConversionException exception =
-        assertThrows(CertificateConversionException.class, () -> {
-          CertificateUtil.convertToBase64(mockCert);
-        });
+        assertThrows(CertificateConversionException.class,
+            () -> CertificateUtil.convertToBase64(mockCert));
 
     assertEquals("Failed to convert X509Certificate to Base64 format", exception.getMessage());
   }
@@ -114,9 +111,8 @@ class CertificateUtilTest {
         0x02, 0x01, 0x01,  // INTEGER 1
         // Missing end-of-contents marker (0x00, 0x00)
     };
-    assertThrows(CertificateConversionException.class, () -> {
-      CertificateUtil.decodeExtensionValue(invalidAsn1Data);
-    });
+    assertThrows(CertificateConversionException.class,
+        () -> CertificateUtil.decodeExtensionValue(invalidAsn1Data));
   }
 
   @Test
@@ -149,9 +145,8 @@ class CertificateUtilTest {
     tempFile.deleteOnExit();
 
     CertificateConversionException exception =
-        assertThrows(CertificateConversionException.class, () -> {
-          CertificateUtil.writePemToFile(mockCert, absolutePath);
-        });
+        assertThrows(CertificateConversionException.class,
+            () -> CertificateUtil.writePemToFile(mockCert, absolutePath));
 
     assertEquals("Failed to convert X509Certificate to PEM format", exception.getMessage());
   }
@@ -165,9 +160,8 @@ class CertificateUtilTest {
     doThrow(new IOException("IO error")).when(mockWriter).write(anyString());
 
     CertificateConversionException exception =
-        assertThrows(CertificateConversionException.class, () -> {
-          CertificateUtil.writePemToFile(mockCert, "/invalid/path/cert.pem");
-        });
+        assertThrows(CertificateConversionException.class,
+            () -> CertificateUtil.writePemToFile(mockCert, "/invalid/path/cert.pem"));
 
     assertEquals("Failed to write PEM certificate to file", exception.getMessage());
   }

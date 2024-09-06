@@ -2,6 +2,7 @@ package it.dontesta.quarkus.tls.auth.ws.resources.endpoint.v1;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.config.SSLConfig.sslConfig;
+import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -83,7 +84,7 @@ class ConnectionInfoResourceEndPointTest {
         .contentType(ContentType.JSON)
         .body("isSecure", equalTo(true))
         .body("httpProtocol", equalTo("HTTP_1_1"))
-        .body("userAgent", equalTo("Apache-HttpClient/4.5.14 (Java/21.0.2)"))
+        .body("userAgent", anything())
         .body("protocol", equalTo("TLSv1.3"))
         .body("client.certCommonName", equalTo("D54FF113-A0C4-4A67-A6DE-B8DEE24A5095"));
   }

@@ -19,11 +19,10 @@ import org.junit.jupiter.api.Test;
 class RolesAugmentorTest {
 
   private RolesAugmentor augmentor;
-  private Logger mockLogger;
 
   @BeforeEach
   void setUp() {
-    mockLogger = mock(Logger.class);
+    Logger mockLogger = mock(Logger.class);
     augmentor = new RolesAugmentor(mockLogger);
   }
 
