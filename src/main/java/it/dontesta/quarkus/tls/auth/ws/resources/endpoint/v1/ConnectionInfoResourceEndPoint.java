@@ -1,5 +1,7 @@
 package it.dontesta.quarkus.tls.auth.ws.resources.endpoint.v1;
 
+import io.quarkus.security.credential.CertificateCredential;
+import io.quarkus.security.identity.SecurityIdentity;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import it.dontesta.quarkus.tls.auth.ws.utils.CertificateUtil;
@@ -62,19 +64,44 @@ public class ConnectionInfoResourceEndPoint {
   }
 
   /**
+   * Returns information about the user identity.
+   *
+   * @param securityIdentity The security identity.
+   * @return A JSON object containing information about the user identity.
+   */
+  @Path("/user-identity")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getUserIdentity(@Context SecurityIdentity securityIdentity) {
+    Map<String, Object> securityIdentityInfo = new HashMap<>();
+
+    securityIdentityInfo.put("principal", securityIdentity.getPrincipal().getName());
+    securityIdentityInfo.put("roles", securityIdentity.getRoles());
+    securityIdentityInfo.put("attributes", securityIdentity.getAttributes());
+
+    CertificateCredential credential = securityIdentity.getCredential(CertificateCredential.class);
+    X509Certificate certificate = credential.getCertificate();
+
+    securityIdentityInfo.put("userCN", CertificateUtil.getCommonName(certificate));
+
+    return Response.ok(securityIdentityInfo).build();
+  }
+
+  /**
    * Extracts custom extensions from the X509Certificate.
    * <p>
-   *   The custom extensions are identified by the following Object Identifiers (OIDs):
-   *   <ul>
-   *     <li>1.3.6.1.4.1.12345.1 = ASN1:UTF8String:Role=${ext_cert_role}</li>
-   *     <li>1.3.6.1.4.1.12345.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}</li>
-   *   </ul>
-   *  </p>
+   * The custom extensions are identified by the following Object Identifiers (OIDs):
+   *  <ul>
+   *    <li>1.3.6.1.4.1.12345.1 = ASN1:UTF8String:Role=${ext_cert_role}</li>
+   *    <li>1.3.6.1.4.1.12345.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}</li>
+   *  </ul>
+   * </p>
    *
-   *  <p>
-   *    You can see the custom extensions in the ssl_extensions.cnf file
-   *    located in the src/main/resources directory.
-   *  </p>
+   * <p>
+   *   You can see the custom extensions in the ssl_extensions.cnf file
+   *   located in the src/main/resources directory.
+   * </p>
+   *
    * @param cert The X509Certificate.
    * @return A map containing the custom extensions.
    */
