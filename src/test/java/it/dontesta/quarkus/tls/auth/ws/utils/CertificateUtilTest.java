@@ -136,11 +136,12 @@ class CertificateUtilTest {
     when(mockCert.getEncoded()).thenThrow(new CertificateEncodingException("Encoding error"));
 
     File tempFile = File.createTempFile("cert", ".pem");
+    String absolutePath = tempFile.getAbsolutePath();
     tempFile.deleteOnExit();
 
     CertificateConversionException exception =
         assertThrows(CertificateConversionException.class, () -> {
-          CertificateUtil.writePemToFile(mockCert, tempFile.getAbsolutePath());
+          CertificateUtil.writePemToFile(mockCert, absolutePath);
         });
 
     assertEquals("Failed to convert X509Certificate to PEM format", exception.getMessage());
