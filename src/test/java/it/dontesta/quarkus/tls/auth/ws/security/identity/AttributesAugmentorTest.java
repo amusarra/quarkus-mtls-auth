@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Antonio Musarra's Blog.
+ * SPDX-License-Identifier: MIT
+ */
+
 package it.dontesta.quarkus.tls.auth.ws.security.identity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

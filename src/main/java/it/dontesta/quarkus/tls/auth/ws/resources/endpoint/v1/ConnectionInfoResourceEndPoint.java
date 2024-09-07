@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024 Antonio Musarra's Blog.
+ * SPDX-License-Identifier: MIT
+ */
+
 package it.dontesta.quarkus.tls.auth.ws.resources.endpoint.v1;
 
 import io.quarkus.security.credential.CertificateCredential;
