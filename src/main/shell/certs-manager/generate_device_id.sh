@@ -26,7 +26,8 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 source "$SCRIPT_DIR/_common.sh"
 
 # Define a secret key (this can be changed)
-SECRET_KEY="my_secret_key_for_generate_device_id"
+# In a real-world scenario, this should be stored securely
+DEVICE_ID_SECRET_KEY="${DEVICE_ID_SECRET_KEY:-my_secret_key_for_generate_device_id}"
 
 # Check if required commands are available
 check_openssl_installed
@@ -48,7 +49,7 @@ generate_device_id() {
   combined_string="${timestamp}#${uuid}#${hostname}"
 
   # Generate an HMAC SHA-256 based on the combined string and the secret key
-  hmac=$(echo -n "$combined_string" | openssl dgst -sha256 -hmac "$SECRET_KEY" | awk '{print $2}')
+  hmac=$(echo -n "$combined_string" | openssl dgst -sha256 -hmac "$DEVICE_ID_SECRET_KEY" | awk '{print $2}')
 
   # Combine the device ID with the HMAC
   device_id="${combined_string}#${hmac}"
@@ -89,7 +90,7 @@ verify_device_id() {
   echo -e "${YELLOW}🔍 Provided HMAC: ${NC}$hmac_provided"
 
   # Regenerate the HMAC from the combined string
-  hmac_calculated=$(echo -n "$combined_string" | openssl dgst -sha256 -hmac "$SECRET_KEY" | awk '{print $2}')
+  hmac_calculated=$(echo -n "$combined_string" | openssl dgst -sha256 -hmac "$DEVICE_ID_SECRET_KEY" | awk '{print $2}')
 
   # Debugging: print the calculated HMAC
   echo -e "${YELLOW}🔍 Calculated HMAC: ${NC}$hmac_calculated"
