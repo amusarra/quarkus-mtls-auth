@@ -109,7 +109,7 @@ class ConnectionInfoResourceEndPointTest {
         .body("principal", equalTo(
             "CN=C708ECA6-C8F9-464C-A745-3A37FF670DFC,OU=Horse Sporting Club,O=Judio Rocio Corporation,L=Rome,ST=Italy,C=IT"))
         .body("roles", equalTo(roles))
-        .body("attributes.deviceId", equalTo("loGdwvje+MLyEJQt"))
+        .body("attributes.deviceId", equalTo("MTcyNTcyMjMxOTk0MTMwMjAwMCMwNmE0NDcwOS00ZWY4LTRlNWUtOTE5My04MTVlOGRmNzVjNjcjYW11c2FycmEtbWFjYm9vay1wcm8ubG9jYWwjNGVkMGYyMzg3ZWY2MDk3ZGM0YjJlYmE2MWI1ZjU1NDFkNGMzMGFmMDU4M2UwNjVkMjc1YmI3ZDU1YjJhMTRhNw=="))
         .body("userCN", equalTo("C708ECA6-C8F9-464C-A745-3A37FF670DFC"));
   }
 
