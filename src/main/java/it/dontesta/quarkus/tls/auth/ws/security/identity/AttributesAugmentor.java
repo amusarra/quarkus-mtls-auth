@@ -110,7 +110,7 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
    */
   public static final String OID_DEVICE_ID = "1.3.6.1.4.1.12345.2";
 
-  private static final String OID_DEVICE_ID_PREFIX = "DeviceId=";
+  public static final String OID_DEVICE_ID_PREFIX = "DeviceId=";
 
   private final Logger log;
 }
