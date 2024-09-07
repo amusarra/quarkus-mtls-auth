@@ -8,5 +8,5 @@
 Developed by: Antonio Musarra
 Blog: https://www.dontesta.it
 GitHub: https://github.com/amusarra
-LinkedIn: https://www.linkedin.com/in/antoniomusarra
+LinkedIn: https://www.linkedin.com/in/amusarra
 Twitter: https://twitter.com/antonio_musarra
