@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>it.dontesta.quarkus.tls.auth</groupId>
     <artifactId>tls-mutual-auth</artifactId>
@@ -46,7 +47,8 @@
         <certificates.server.organization>Dontesta</certificates.server.organization>
         <certificates.server.organizational.unit>IT Labs</certificates.server.organizational.unit>
         <certificates.server.common.name>rd.quarkus.dontesta.it</certificates.server.common.name>
-        <certificates.server.san.domains>DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it,DNS:localhost</certificates.server.san.domains>
+        <certificates.server.san.domains>DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it,DNS:localhost
+        </certificates.server.san.domains>
         <certificates.server.output.p12.file>server_cert.p12</certificates.server.output.p12.file>
     </properties>
 
@@ -161,7 +163,8 @@
                 </executions>
                 <configuration>
                     <systemPropertyVariables>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner
+                        </native.image.path>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
@@ -183,7 +186,8 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${project.basedir}/src/main/shell/certs-manager/certs_manager.sh</executable> <!-- Comando da eseguire, ad esempio /bin/sh per shell script -->
+                            <executable>${project.basedir}/src/main/shell/certs-manager/certs_manager.sh
+                            </executable> <!-- Comando da eseguire, ad esempio /bin/sh per shell script -->
                             <arguments>
                                 <argument>generate-ca</argument>
                                 <argument>--working-dir</argument>
@@ -294,7 +298,8 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>        </plugins>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
