@@ -1,3 +1,4 @@
+# Title: Common functions for the certs-manager scripts
 # This file contains common functions for the certs-manager scripts.
 # Load common functions for the certs-manager scripts
 # source _common.sh
@@ -19,6 +20,15 @@ check_openssl_installed() {
     echo -e "${RED}❌ OpenSSL is not installed. Please install it to continue.${NC}"
     exit 1
   fi
+}
+
+# Function to check if uuidgen is installed
+check_uuidgen_installed() {
+    # Check if uuidgen is installed
+    if ! command -v uuidgen &> /dev/null; then
+        echo -e "${RED}❌ Error: uuidgen is not installed. Please install it to proceed.${NC}"
+        exit 1
+    fi
 }
 
 # Function to check OpenSSL version

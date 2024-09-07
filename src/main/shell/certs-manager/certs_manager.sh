@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Title: Certificates Manager
+#
 # This script generates a tree of files for a CA, server or client certificate using OpenSSL.
 # The script requires at least 2 parameters:
 # 1. Operation: generate-ca, generate-server or generate-client
