@@ -24,11 +24,11 @@ check_openssl_installed() {
 
 # Function to check if uuidgen is installed
 check_uuidgen_installed() {
-    # Check if uuidgen is installed
-    if ! command -v uuidgen &> /dev/null; then
-        echo -e "${RED}❌ Error: uuidgen is not installed. Please install it to proceed.${NC}"
-        exit 1
-    fi
+  # Check if uuidgen is installed
+  if ! command -v uuidgen &>/dev/null; then
+    echo -e "${RED}❌ Error: uuidgen is not installed. Please install it to proceed.${NC}"
+    exit 1
+  fi
 }
 
 # Function to check OpenSSL version
@@ -41,6 +41,43 @@ check_openssl_version() {
     echo -e "${GREEN}✅ OpenSSL version $current_version is suitable.${NC}"
   else
     echo -e "${RED}❌ OpenSSL version $current_version is not suitable. Please upgrade to version $REQUIRED_VERSION or later.${NC}"
+    exit 1
+  fi
+}
+
+# Function to check if xidel is installed
+check_xidel_installed() {
+  if ! command -v xidel &>/dev/null; then
+    echo -e "${RED}❌ Error: xidel is not installed.${NC}"
+    echo -e "${YELLOW}⚙️  To install xidel, follow the instructions below:${NC}"
+    echo -e "${BLUE}Ubuntu/Debian:${NC} sudo apt-get update && sudo apt-get install xidel"
+    echo -e "${BLUE}Fedora:${NC} sudo dnf install xidel"
+    echo -e "${BLUE}Arch Linux:${NC} sudo pacman -S xidel"
+    echo -e "${BLUE}OpenSUSE:${NC} sudo zypper install xidel"
+    echo -e "${BLUE}macOS (using Homebrew):${NC} brew install xidel"
+    echo -e "${BLUE}Other distributions:${NC} Download from https://github.com/benibela/xidel/releases"
+    exit 1
+  fi
+}
+
+# Function to check if curl is installed
+check_curl_installed() {
+  if ! command -v curl &>/dev/null; then
+    echo -e "${RED}❌ Error: curl is not installed.${NC}"
+    echo -e "${YELLOW}⚙️  To install curl, follow the instructions below:${NC}"
+    echo -e "${BLUE}Ubuntu/Debian:${NC} sudo apt-get update && sudo apt-get install curl"
+    echo -e "${BLUE}Fedora:${NC} sudo dnf install curl"
+    echo -e "${BLUE}Arch Linux:${NC} sudo pacman -S curl"
+    echo -e "${BLUE}OpenSUSE:${NC} sudo zypper install curl"
+    echo -e "${BLUE}macOS (using Homebrew):${NC} brew install curl"
+    exit 1
+  fi
+}
+
+# Function to check if keytool is installed
+check_keytool_installed() {
+  if ! command -v keytool &>/dev/null; then
+    print_msg "${RED}" "❌ keytool is not installed. Please install it and try again."
     exit 1
   fi
 }
@@ -155,6 +192,12 @@ generate_private_key() {
   echo "$private_key_password" >"$password_file"
 }
 
+# Function to generate a random password
+generate_random_password() {
+  local password_length=12
+  openssl rand -base64 ${password_length}
+}
+
 # Function to generate OpenSSL config file for SAN support
 # @param config_file: The OpenSSL config file path
 # @param san_domains: The SAN domains
@@ -251,6 +294,13 @@ get_private_key_password() {
 
   private_key_password=$(cat "$password_file")
   echo "$private_key_password"
+}
+
+# Function to print colored messages
+print_msg() {
+  local color=$1
+  local msg=$2
+  echo -e "${color}${msg}${NC}"
 }
 
 # Function to verify the Certificate Issuer
