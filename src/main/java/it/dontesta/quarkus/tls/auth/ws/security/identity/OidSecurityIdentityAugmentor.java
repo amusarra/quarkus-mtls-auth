@@ -49,8 +49,15 @@ public class OidSecurityIdentityAugmentor implements SecurityIdentityAugmentor {
 
     if (clientCert != null) {
       X509Certificate cert = clientCert.getCertificate();
-      String oidValue = CertificateUtil.decodeExtensionValue(
-              cert.getExtensionValue(AttributesAugmentor.OID_DEVICE_ID))
+      byte[] oidValueFromCert = cert.getExtensionValue(AttributesAugmentor.OID_DEVICE_ID);
+
+      if (oidValueFromCert == null) {
+        throw new SecurityException(
+            "Invalid certificate OID { %s } missing for DeviceId.".formatted(
+                AttributesAugmentor.OID_DEVICE_ID));
+      }
+
+      String oidValue = CertificateUtil.decodeExtensionValue(oidValueFromCert)
           .replace(AttributesAugmentor.OID_DEVICE_ID_PREFIX, "").trim();
 
       // Verify that the DeviceId is valid

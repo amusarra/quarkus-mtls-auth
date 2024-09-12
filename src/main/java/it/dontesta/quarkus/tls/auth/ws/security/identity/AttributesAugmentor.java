@@ -59,10 +59,10 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
     Map<String, String> attributes = new HashMap<>();
 
     try {
-      byte[] deviceIdBytes = certificate.getExtensionValue(OID_DEVICE_ID);
+      byte[] deviceIdFromCert = certificate.getExtensionValue(OID_DEVICE_ID);
 
-      if (deviceIdBytes != null) {
-        String deviceId = CertificateUtil.decodeExtensionValue(deviceIdBytes);
+      if (deviceIdFromCert != null) {
+        String deviceId = CertificateUtil.decodeExtensionValue(deviceIdFromCert);
         log.debug("Decoded Device ID from certificate: " + deviceId);
 
         if (deviceId != null) {
@@ -74,6 +74,9 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
       }
     } catch (Exception ex) {
       log.error("Occurred an error during attributes extraction from certificate", ex);
+
+      throw new SecurityException(
+          "Occurred an error during attributes extraction from certificate");
     }
 
     return attributes;
@@ -108,7 +111,7 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
    * <p>You can see the custom extensions in the ssl_extensions.cnf file
    * located in the src/main/shell/certs-manager directory.
    */
-  public static final String OID_DEVICE_ID = "1.3.6.1.4.1.12345.2";
+  public static final String OID_DEVICE_ID = "1.3.6.1.4.1.99999.2";
 
   public static final String OID_DEVICE_ID_PREFIX = "DeviceId=";
 

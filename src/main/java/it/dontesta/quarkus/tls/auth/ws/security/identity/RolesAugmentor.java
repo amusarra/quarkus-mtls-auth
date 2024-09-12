@@ -71,11 +71,11 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
 
     try {
       // Retrieve the extension value from the certificate
-      byte[] roleOidBytes = certificate.getExtensionValue(OID_ROLES);
+      byte[] roleOidBytesFromCert = certificate.getExtensionValue(OID_ROLES);
 
-      if (roleOidBytes != null) {
+      if (roleOidBytesFromCert != null) {
         // Decode the extension value
-        String decodedRoles = CertificateUtil.decodeExtensionValue(roleOidBytes);
+        String decodedRoles = CertificateUtil.decodeExtensionValue(roleOidBytesFromCert);
 
         if (decodedRoles != null) {
           log.debug("Decoded roles from certificate: " + decodedRoles);
@@ -87,12 +87,18 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
                 .map(String::trim)
                 .collect(Collectors.toSet()));
           } else {
-            log.warn("Decoded roles do not match the expected pattern: " + decodedRoles);
+            log.warn("Decoded roles do not match the expected pattern: %s".formatted(decodedRoles));
+
+            throw new SecurityException(
+                "Decoded roles do not match the expected pattern: %s".formatted(decodedRoles));
           }
         }
       }
     } catch (Exception ex) {
       log.error("Occurred an error during roles extraction from certificate", ex);
+
+      throw new SecurityException(
+          "Occurred an error during roles extraction from certificate");
     }
 
     return roles;
@@ -134,7 +140,7 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
    * <p>You can see the custom extensions in the ssl_extensions.cnf file
    * located in the src/main/shell/certs-manager directory.
    */
-  public static final String OID_ROLES = "1.3.6.1.4.1.12345.1";
+  public static final String OID_ROLES = "1.3.6.1.4.1.99999.1";
 
   private final Logger log;
 }
