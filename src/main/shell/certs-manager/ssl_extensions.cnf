@@ -1,10 +1,10 @@
 [ client_cert ]
 basicConstraints = CA:FALSE
 keyUsage = digitalSignature, keyEncipherment
-extendedKeyUsage = clientAuth
+extendedKeyUsage = critical, clientAuth
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 
 # Estensioni personalizzate
-1.3.6.1.4.1.12345.1 = ASN1:UTF8String:Role=${ext_cert_role}
-1.3.6.1.4.1.12345.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}
+1.3.6.1.4.1.99999.1 = ASN1:UTF8String:Role=${ext_cert_role}
+1.3.6.1.4.1.99999.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}
