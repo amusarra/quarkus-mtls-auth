@@ -55,6 +55,17 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
     return Uni.createFrom().item(build(identity));
   }
 
+  /**
+   * Extracts the attributes from the certificate extension.
+   *
+   * <p>The attributes are extracted from the certificate extension with the OID {@link #OID_DEVICE_ID}.
+   * The extension value is expected to be an ASN.1 UTF8String with the format
+   * "DeviceId=deviceId".
+   * </p>
+   *
+   * @param certificate the certificate from which to extract the attributes
+   * @return a map of attributes extracted from the certificate extension
+   */
   protected Map<String, String> extractAttributesFromCertificate(X509Certificate certificate) {
     Map<String, String> attributes = new HashMap<>();
 

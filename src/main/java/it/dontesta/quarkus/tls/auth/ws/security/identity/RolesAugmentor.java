@@ -80,7 +80,7 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
         if (decodedRoles != null) {
           log.debug("Decoded roles from certificate: " + decodedRoles);
 
-          // Verifica che decodedRoles rispecchi il pattern Role=RolesName
+          // Verify that decodedRoles matches the expected pattern
           if (decodedRoles.matches("^Role=([A-Za-z]+(?:,[A-Za-z]+)*+)$")) {
             // Add the roles to the set
             roles.addAll(Arrays.stream(decodedRoles.split("=")[1].split(","))
