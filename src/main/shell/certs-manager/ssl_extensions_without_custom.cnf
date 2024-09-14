@@ -1,0 +1,6 @@
+[ client_cert ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = critical, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
