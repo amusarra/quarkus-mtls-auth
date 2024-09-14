@@ -97,8 +97,7 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
     } catch (Exception ex) {
       log.error("Occurred an error during roles extraction from certificate", ex);
 
-      throw new SecurityException(
-          "Occurred an error during roles extraction from certificate");
+      throw new SecurityException(ex.getMessage(), ex);
     }
 
     return roles;
