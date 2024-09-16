@@ -2398,3 +2398,93 @@ L'output dei test di accesso ai servizi REST con il certificato client con l'est
 
 Con questo ultimo test abbiamo completato la serie di verifiche dell’accesso ai servizi REST utilizzando i certificati client generati. Abbiamo confermato che l’autenticazione mTLS ha funzionato correttamente e che le policy di accesso ai servizi REST sono state applicate in modo adeguato.
 
+
+
+## Cos'è il Trusted Service List (TSL) e come integrarlo
+
+Il **TSL** (Trusted Service List) è un documento elettronico standardizzato che contiene informazioni sui **servizi fiduciari** di uno Stato membro dell’Unione Europea o di un altro paese riconosciuto. I servizi fiduciari includono quelli che offrono servizi di firma digitale, autenticazione, sigilli elettronici, certificati SSL/TLS e altri meccanismi di sicurezza legati all’identità digitale.
+
+Questa **mindmap** suddivide il TSL nei seguenti rami principali:
+
+- **Definizione**: contiene la definizione del TSL e il documento elettronico standard che lo rappresenta.
+- **Componenti Principali**: elenca i principali componenti del TSL, come i fornitori di servizi fiduciari (TSP), i certificati digitali e i servizi fiduciari qualificati.
+- **Normative**: descrive le normative che regolano il TSL, come il regolamento eIDAS nell’UE e l’interoperabilità tra paesi.
+- **Utilizzo**: spiega come utilizzare il TSL per verificare i certificati, garantire la conformità normativa, firmare documenti digitali e proteggere i siti web con certificati SSL/TLS.
+- **Aggiornamenti**: discute la validità e l’aggiornamento periodico del TSL, nonché la revoca dei fornitori non conformi.
+
+
+
+```mermaid
+mindmap
+  root((TSL - Trusted Service List))
+    definition[Definizione]
+      definition --> document[Documento elettronico standard]
+      definition --> info[Contiene informazioni sui servizi fiduciari]
+    components[Componenti Principali]
+      components --> TSP[Fornitori di Servizi Fiduciari TSP]
+      components --> certificates[Certificati digitali]
+      components --> services[Servizi fiduciari qualificati]
+    regulation[Normative]
+      regulation --> eIDAS[Regolamento eIDAS nell'UE]
+      regulation --> interoperability[Interoperabilità tra paesi]
+    usage[Utilizzo]
+      usage --> verifyCerts[Verifica dei certificati]
+      usage --> conformity[Conformità normativa]
+      usage --> digitalSign[Firma digitale]
+      usage --> secureWeb[Siti web sicuri SSL/TLS]
+    updates[Aggiornamenti]
+      updates --> validity[Validità e aggiornamento periodico]
+      updates --> revoke[Revoca di fornitori non conformi]
+```
+
+Figura 11 - Mindmap del Trusted Service List (TSL)
+
+
+
+Gli Stati membri dell'Unione Europea e dello Spazio Economico Europeo pubblicano elenchi attendibili di fornitori di servizi fiduciari qualificati in conformità al Regolamento eIDAS. La Commissione Europea pubblica questi elenchi di fiducia in un formato elettronico standardizzato chiamato Trusted List (TL) che è possibile consultare sulla [eIDAS Dashboard](https://eidas.ec.europa.eu/efda/tl-browser/#/screen/home).
+
+ 
+
+### La soluzione dell'integrazione del TSL in Quarkus
+
+Per integrare il TSL in un'applicazione Quarkus, potremmo utilizzare la libreria **[DSS : Digital Signature Service](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Digital+Signature+Service+-++DSS)** che fornisce un'implementazione Java per la gestione delle Trusted Lists (TL) più decine di altre cose all'interno dell'ecosistema DSS. La libreria DSS è stata sviluppata dalla Commissione Europea e fa parte dei [Digital Building Blocks (DBB)](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/) per la creazione di servizi digitali sicuri e interoperabili. In questo esempio d'integrazione, faremo una nostra implementazione che richede davvero poco sforzo e sfrutteremo in questo modo delle caratteristiche di Quarkus.
+
+L'[applicazione Quarkus](https://github.com/amusarra/quarkus-mtls-auth-tutorial) fino a questo momento è stata configurata per l'autenticazione mTLS e l'accesso ai servizi REST è stato limitato in base ai ruoli definiti e attributi presenti nei certificati client. L'integrazione del TSL potrebbe essere utile per verificare i certificati digitali dei fornitori di servizi fiduciari qualificati e garantire la conformità normativa. 
+
+Restando nel territorio Italiano e volendo per fare un esempio pratico, potremmo utilizzare il TSL Italiano pubblicato dall'Agenzia per l'Italia Digitale (AgID) e integrarlo nell'applicazione Quarkus. L'AgID pubblica il TSL Italiano in un formato elettronico standardizzato che può essere consultato sulla [eIDAS Dashboard](https://eidas.ec.europa.eu/efda/tl-browser/#/screen/tl/IT).
+
+Integrando il TSL Italiano sulla nostra applicazione Quarkus, potremo per consentire l'accesso ai servizi REST per i possessori di certificati digitali rilasciati da fornitori di servizi fiduciari qualificati presenti nel TSL Italiano. Qual è il primo certificato digitale che quasi tutti i cittadini Italiani posseggono? La **[Carta d'Identità Elettronica (CIE)](https://www.cartaidentita.interno.gov.it/)** rilasciata dal Ministero dell'Interno e prodotta dal Poligrafico e Zecca dello Stato, è un esempio di certificato digitale che potrebbe essere verificato tramite il TSL Italiano.
+
+
+
+Quali sono i macro passaggi per integrare il TSL Italiano nell'applicazione Quarkus?
+
+1. Scaricare il file XML del TSL Italiano da eIDAS (https://eidas.agid.gov.it/TL/TSL-IT.xml)
+2. Eseguire il parsing del file XML
+3. Estrazione dei certificati digitali dei fornitori di servizi fiduciari qualificati
+4. Verifica dei certificati digitali in ingresso
+5. Configurare il TLS in Quarkus con i certificati digitali validati
+
+
+
+
+
+
+
+```mermaid
+graph TD
+  UpdateTSL[Task Periodico \nGov Certificate Updater] --> Start([Inizio])
+  Start --> A[Scaricare il TSL-IT.xml]
+  A --> B[Parser del file XML]
+  B --> C[Estrazione dei certificati e TSP]
+  C --> D{Certificati validi?}
+  D -->|Sì| E[Convalidare i certificati in ingresso]
+  D -->|No| F[Generare errore di certificato non valido]
+  E --> G[Configurare TLS in Quarkus]
+  G --> End([Fine])
+  F --> End
+```
+
+
+
+## Considerazioni finali
