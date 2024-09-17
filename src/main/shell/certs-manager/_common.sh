@@ -154,6 +154,27 @@ generate_csr() {
   fi
 }
 
+# Function to generate a fake CA certificate
+# @param fake_ca_cert_path: The fake CA certificate file path
+generate_fake_ca_cert() {
+  local fake_ca_cert_path=$1
+
+  # Generate a private key
+  openssl genpkey -algorithm RSA -out fake_ca_key.pem -pkeyopt rsa_keygen_bits:2048
+
+  # Generate a self-signed certificate
+  openssl req -new -x509 -key fake_ca_key.pem -out "${fake_ca_cert_path}" -days 365 -subj "/C=US/ST=California/L=San Francisco/O=Fake Identity Corp/OU=IT Department/CN=Faked Identity Corp Root CA"
+
+  # Clean up the private key file
+  rm fake_ca_key.pem
+
+  if [ -f "${fake_ca_cert_path}" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 # Function to generate a p12 file
 # @param private_key_file: The private key file path
 # @param ca_certificate_file: The CA certificate file path

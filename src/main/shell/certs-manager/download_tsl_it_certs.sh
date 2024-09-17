@@ -6,9 +6,6 @@
 # The script also provides options for specifying the URL, output directory,
 # output file name, and XML output file path.
 #
-# Usage:
-#   ./download_tsl_it_certs.sh [--certs-url <certs_url>] [--output-path <output_path>] [--output-file-name <output_file_name>] [--xml-output-file <xml_output_file>] [--generate-p12] [--generate-p12-with-entry-names] [--verbose] [--help]
-#
 # Options:
 #   --certs-url <certs_url>         URL of the XML file containing the certificates (default: https://eidas.agid.gov.it/TL/TSL-IT.xml)
 #   --output-path <output_path>     Output directory for the PEM files (default: /tmp/tsl-it)
@@ -16,6 +13,7 @@
 #   --xml-output-file <xml_output_file>   Path of the XML output file (default: /tmp/tsl-it.xml)
 #   --generate-p12                  Generate a .p12 truststore from the PEM bundle
 #   --generate-p12-with-entry-names Generate a .p12 truststore with entry names from CN
+#   --fake                          Generate a fake CA certificate
 #   --verbose                       Enable verbose mode
 #   --help                          Show this help message
 #
@@ -39,6 +37,7 @@ OUTPUT_PEM_BUNDLE_FILE_NAME="tsl-it_bundle.pem"
 XML_OUTPUT_FILE="/tmp/tsl-it.xml"
 GENERATE_P12=0
 GENERATE_P12_WITH_ENTRY_NAMES=0
+GENERATE_FAKE=0
 VERBOSE=0
 
 # Function to clean the output directory
@@ -201,15 +200,32 @@ parse_and_save_certs() {
   print_msg "${RED}" "🏁 Expired certificates: ${expired_cert_count}"
 }
 
+# Function to generate a fake CA certificate
+generate_fake_ca() {
+  print_msg "${YELLOW}" "🔐 Generating fake CA certificate"
+  local fake_ca_cert_path="${OUTPUT_PATH_PEM_BUNDLE}/fake_ca.pem"
+  generate_fake_ca_cert "${fake_ca_cert_path}"
+  if [ $? -ne 0 ]; then
+    print_msg "${RED}" "❌ Error generating the fake CA certificate."
+    exit 1
+  fi
+  print_msg "${GREEN}" "✅ Generated fake CA certificate at ${fake_ca_cert_path}"
+
+  # Add the fake CA certificate to the PEM bundle
+  cat "${fake_ca_cert_path}" >> "${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}"
+  print_msg "${GREEN}" "✅ Added fake CA certificate to PEM bundle"
+}
+
 # Function to show the script usage
 usage() {
-  echo "Usage: $0 [--certs-url <certs_url>] [--output-path <output_path>] [--output-file-name <output_file_name>] [--xml-output-file <xml_output_file>] [--generate-p12] [--generate-p12-with-entry-names] [--verbose] [--help]"
+  echo "Usage: $0 [--certs-url <certs_url>] [--output-path <output_path>] [--output-file-name <output_file_name>] [--xml-output-file <xml_output_file>] [--generate-p12] [--generate-p12-with-entry-names] [--fake] [--verbose] [--help]"
   echo "  --certs-url <certs_url>         URL of the XML file containing the certificates (default: ${CERTS_URL})"
   echo "  --output-path <output_path>     Output directory for the PEM files (default: ${OUTPUT_PATH_PEM_BUNDLE})"
   echo "  --output-file-name <output_file_name>  Name of the PEM bundle file (default: ${OUTPUT_PEM_BUNDLE_FILE_NAME})"
   echo "  --xml-output-file <xml_output_file>   Path of the XML output file (default: ${XML_OUTPUT_FILE})"
   echo "  --generate-p12                  Generate a .p12 truststore from the PEM bundle"
   echo "  --generate-p12-with-entry-names Generate a .p12 truststore with entry names from CN"
+  echo "  --fake                          Generate a fake CA certificate"
   echo "  --verbose                       Enable verbose mode"
   echo "  --help                          Show this help message"
   exit 1
@@ -237,19 +253,26 @@ while [[ "$#" -gt 0 ]]; do
   --generate-p12) GENERATE_P12=1 ;;
   --generate-p12-with-entry-names) GENERATE_P12_WITH_ENTRY_NAMES=1 ;;
   --verbose) VERBOSE=1 ;;
+  --fake) GENERATE_FAKE=1 ;;
   --help) usage ;;
   *) usage ;;
   esac
   shift
 done
 
-# Download the XML file and call the function to parse and save the certificates
+# Main function
 main() {
   print_msg "${YELLOW}" "🚀 Starting certificate update process"
   check_keytool_installed
   check_xidel_installed
   check_curl_installed
   mkdir -p "${OUTPUT_PATH_PEM_BUNDLE}"
+
+  if [ $GENERATE_FAKE -eq 1 ]; then
+    generate_fake_ca
+    exit 0
+  fi
+
   local xml_content
   xml_content=$(curl --progress-bar -s "${CERTS_URL}")
   print_msg "${GREEN}" "✅ Downloaded XML content"
