@@ -31,7 +31,7 @@ public class GovCertificateUpdater {
   String certsUrl;
 
   @Inject
-  public GovCertificateUpdater(GovCertParser certParser, Logger log) {
+  public GovCertificateUpdater(GovCertificateParser certParser, Logger log) {
     this.certParser = certParser;
     this.log = log;
   }
@@ -39,13 +39,13 @@ public class GovCertificateUpdater {
   /**
    * This scheduled method downloads the certificates from the URL
    * <a href="https://eidas.agid.gov.it/TL/TSL-IT.xml">TSL-IT.xml</a> and uses the
-   * {@link GovCertParser} to parse and save the certificates (single PEM files)
+   * {@link GovCertificateParser} to parse and save the certificates (single PEM files)
    * and save them as a PEM bundle.
    *
-   * @see GovCertParser#parseAndSaveCerts(String)
-   * @see GovCertParser#saveCertificatesAsPem(Path, Path)
+   * @see GovCertificateParser#parseAndSaveCerts(String)
+   * @see GovCertificateParser#saveCertificatesAsPem(Path, Path)
    */
-  @Scheduled(every = "2m", delayed = "60s")
+  @Scheduled(every = "{gov.trust.certs.tsl.update.period}", delayed = "{gov.trust.certs.tsl.update.initial.delay}")
   public void updateCertificates() {
     HttpClient client = HttpClient.newHttpClient();
     HttpRequest request = HttpRequest.newBuilder()
@@ -73,5 +73,5 @@ public class GovCertificateUpdater {
 
   private final Logger log;
 
-  private final GovCertParser certParser;
+  private final GovCertificateParser certParser;
 }

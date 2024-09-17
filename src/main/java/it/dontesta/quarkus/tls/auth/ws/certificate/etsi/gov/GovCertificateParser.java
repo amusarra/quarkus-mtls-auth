@@ -52,7 +52,7 @@ import org.w3c.dom.NodeList;
  * @see <a href="https://www.etsi.org/deliver/etsi_ts/119600_119699/119612/02.02.01_60/ts_119612v020201p.pdf">ETSI TS 119 612</a>
  */
 @Singleton
-public class GovCertParser {
+public class GovCertificateParser {
 
   @ConfigProperty(name = "gov.trust.certs.pem.bundle.output.path")
   String outputPathPemBundle;
@@ -66,7 +66,7 @@ public class GovCertParser {
    * @param log the logger.
    */
   @Inject
-  public GovCertParser(Logger log) {
+  public GovCertificateParser(Logger log) {
     this.log = log;
     try {
       outputPath = Files.createTempDirectory("gov-trust-certs");
@@ -147,7 +147,7 @@ public class GovCertParser {
       IntStream.range(0, serviceTypeNodes.getLength())
           .mapToObj(serviceTypeNodes::item)
           .filter(node -> node.getNodeType() == Node.ELEMENT_NODE)
-          .map(GovCertParser::apply)
+          .map(GovCertificateParser::apply)
           .map(serviceInfoElement -> serviceInfoElement.getElementsByTagName("X509Certificate")
               .item(0))
           .filter(certNode -> certNode != null && certNode.getNodeType() == Node.ELEMENT_NODE)
@@ -175,7 +175,7 @@ public class GovCertParser {
         }
       }
 
-      Path certPath = outputPath.resolve(outputPemBundleFileName);
+      Path certPath = outputPath.resolve(getOutputPemBundleFileName());
 
       try (PemWriter pemWriter = new PemWriter(Files.newBufferedWriter(certPath))) {
         for (PemObject pemObject : pemObjects) {
