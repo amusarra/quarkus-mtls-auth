@@ -15,11 +15,11 @@ state: Bozza
 
 [TOC]
 
-La sicurezza delle applicazioni web è sempre più critica, soprattutto in contesti in cui le comunicazioni devono essere protette da entrambe le parti coinvolte. In questo contesto, l’**autenticazione reciproca TLS (mTLS)** offre una soluzione solida, garantendo che sia il client che il server siano autenticati prima di stabilire una connessione sicura. In questo articolo vedremo come implementare mTLS in un’applicazione utilizzando **[Quarkus](https://quarkus.io)**, un framework Java ottimizzato per il cloud.
+La sicurezza delle applicazioni web è sempre più critica, soprattutto in contesti in cui le comunicazioni devono essere protette da entrambe le parti coinvolte. In questo contesto, l’**autenticazione reciproca TLS (mTLS)** offre una soluzione solida, garantendo che sia il client sia il server siano autenticati prima di stabilire una connessione sicura. L'obiettivo di questo articolo è quello di guidarvi verso la strada dell'implementazione di mTLS in un’applicazione utilizzando **[Quarkus](https://quarkus.io)**, un framework Java ottimizzato per il cloud.
 
 ## Cos’è l’autenticazione reciproca TLS (mTLS)?
 
-L’autenticazione reciproca TLS (o mutual TLS) è un’estensione del protocollo TLS standard. Di solito, TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. _Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche_.
+L’autenticazione reciproca TLS (o mutual TLS o mTLS) è un’estensione del protocollo [TLS](https://it.wikipedia.org/wiki/Transport_Layer_Security) standard. Solitamente TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. __Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche__.
 
 Questa autenticazione bidirezionale è particolarmente utile in applicazioni distribuite, microservizi o API, dove sia il client che il server devono fidarsi reciprocamente prima di scambiare dati sensibili.
 
@@ -46,89 +46,93 @@ sequenceDiagram
 
 Figura 1 - Sequence diagramm del processo di autenticazione reciproca TLS (mTLS)
 
-È importate capire che la verifica dei certificati nel contesto mTLS è un processo cruciale per garantire la sicurezza della connessione, impedendo la comunicazione con entità non fidate o malintenzionate. Se una delle verifiche fallisce (ad esempio, il certificato è scaduto o non valido), l’handshake viene interrotto e la connessione non viene stabilita. 
+È importate capire che la verifica dei certificati nel contesto mTLS è un processo cruciale per garantire la sicurezza della connessione, impedendo la comunicazione con entità non fidate o malintenzionate. Se una delle verifiche dovesse fallire (ad esempio, il certificato è scaduto o non valido), l’handshake sarà interrotto e la connessione non sarà stabilita. 
 
 Vediamo di approfondire quali sono i passaggi chiave per la verifica dei certificati in un contesto mTLS.
 
 ### Verifica del certificato del server da parte del client
 
-Quando il server invia il proprio certificato al client, quest’ultimo deve verificarlo attraverso i seguenti passaggi:
+Quando il server invia il proprio certificato al client, quest’ultimo deve verificarlo attraverso i seguenti passaggi.
 
-- **Catena di certificazione (Certificate Chain)**: Il client controlla che il certificato ricevuto dal server appartenga a una catena di certificati attendibili. Questo significa che il certificato del server deve essere firmato da un’autorità di certificazione (CA) che è inclusa nell’elenco delle CA fidate del client. La catena di certificazione viene verificata partendo dal certificato del server fino alla CA radice fidata.
-- **Firma del certificato**: Il client verifica la firma digitale sul certificato del server. La firma deve essere stata generata dalla CA utilizzando la sua chiave privata. Il client usa la chiave pubblica della CA, inclusa nel certificato della CA, per verificare la firma. Se la firma corrisponde, il certificato non è stato modificato e può essere considerato autentico.
-- **Validità temporale**: Il client verifica che il certificato non sia scaduto, controllando le date di validità (notBefore e notAfter) contenute nel certificato.
-- **Revoca del certificato**: Il client può verificare se il certificato del server è stato revocato. Questo avviene tramite il controllo delle CRL (Certificate Revocation List) o utilizzando il protocollo OCSP (Online Certificate Status Protocol) per interrogare in tempo reale lo stato del certificato.
-- **Hostname**: Il client verifica che l’hostname del server corrisponda a quello presente nel certificato (nel campo Subject o nel campo Subject Alternative Name). Questo assicura che il certificato sia effettivamente emesso per il server con cui il client sta tentando di comunicare.
+- **Catena di certificazione (Certificate Chain)**: il client controlla che il certificato ricevuto dal server appartenga a una catena di certificati attendibili. Questo significa che il certificato del server deve essere firmato da un’autorità di certificazione (CA) che è inclusa nell’elenco delle CA fidate del client. La catena di certificazione viene verificata partendo dal certificato del server fino alla CA radice fidata.
+- **Firma del certificato**: il client verifica la firma digitale sul certificato del server. La firma deve essere stata generata dalla CA utilizzando la sua chiave privata. Il client usa la chiave pubblica della CA, inclusa nel certificato della CA, per verificare la firma. Se la firma corrisponde, il certificato non è stato modificato e può essere considerato autentico.
+- **Validità temporale**: il client verifica che il certificato non sia scaduto, controllando le date di validità (notBefore e notAfter) contenute nel certificato.
+- **Revoca del certificato**: il client può verificare se il certificato del server è stato revocato. Questo avviene tramite il controllo delle **[CRL (Certificate Revocation List)](https://en.wikipedia.org/wiki/Certificate_revocation_list)** o utilizzando il protocollo **[OCSP (Online Certificate Status Protocol)](https://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol)** per interrogare in tempo reale lo stato del certificato.
+- **Hostname**: Il client verifica che l’hostname del server corrisponda a quello presente nel certificato (nel campo **Subject** o nel campo **[Subject Alternative Name](https://en.wikipedia.org/wiki/Public_key_certificate#Subject_Alternative_Name_certificate)**). Questo assicura che il certificato sia effettivamente emesso per il server con cui il client sta tentando di comunicare.
 
 ### Verifica del certificato del client da parte del server
 
-Quando il client invia il proprio certificato al server (se richiesto), il server deve verificarlo con i seguenti passaggi simili a quelli effettuati dal client:
+Quando il client invia il proprio certificato al server (se richiesto), il server deve verificarlo con i seguenti passaggi simili a quelli effettuati dal client.
 
-- **Catena di certificazione**: Il server verifica che il certificato del client appartenga a una catena di certificati attendibili, cioè che sia firmato da una CA che il server riconosce come fidata. Anche qui si controlla la catena fino alla CA radice.
-- **Firma del certificato**: Il server verifica la firma digitale sul certificato del client, utilizzando la chiave pubblica della CA che ha emesso il certificato per assicurarsi che la firma sia valida e che il certificato non sia stato alterato.
-- **Validità temporale**: Il server controlla che il certificato del client non sia scaduto, verificando le date di inizio e fine validità.
-- **Revoca del certificato**: Come nel caso del client, anche il server può effettuare un controllo per verificare se il certificato del client è stato revocato, usando una CRL o il protocollo OCSP.
-- **Identità del client**: In alcuni casi, il server può verificare che il certificato del client corrisponda a un’entità specifica (ad esempio, un’azienda o un dispositivo) che ha diritto di accedere ai servizi del server. Questa verifica può essere basata sui campi presenti nel certificato, come il campo Subject.
+- **Catena di certificazione**: il server verifica che il certificato del client appartenga a una catena di certificati attendibili, cioè che sia firmato da una CA che il server riconosce come fidata. Anche qui si controlla la catena fino alla CA radice.
+- **Firma del certificato**: il server verifica la firma digitale sul certificato del client, utilizzando la chiave pubblica della CA che ha emesso il certificato per assicurarsi che la firma sia valida e che il certificato non sia stato alterato.
+- **Validità temporale**: il server controlla che il certificato del client non sia scaduto, verificando le date di inizio e fine validità.
+- **Revoca del certificato**: come nel caso del client, anche il server può effettuare un controllo per verificare se il certificato del client è stato revocato, usando una CRL o il protocollo OCSP.
+- **Identità del client**: in alcuni casi, il server può verificare che il certificato del client corrisponda a un’entità specifica (ad esempio, un’azienda o un dispositivo) che ha diritto di accedere ai servizi del server. Questa verifica può essere basata sui campi presenti nel certificato, come il campo Subject.
 
 ### Crittografia e integrità dei certificati
 
-Durante l’handshake, la chiave pubblica contenuta nei certificati viene utilizzata per scambiare in modo sicuro il **premaster secret**, che verrà poi trasformato nella chiave di sessione. Grazie a questo, il client e il server possono essere certi dell’identità reciproca e stabilire una connessione sicura.
+Durante l’handshake, la chiave pubblica contenuta nei certificati viene utilizzata per scambiare in modo sicuro il **premaster secret**, che sarà poi trasformato nella chiave di sessione. Grazie a questo, il client e il server possono essere certi dell’identità reciproca e stabilire una connessione sicura.
 
 ### I cassetti digitali
 
-Sì, i certificati utilizzati per l'autenticazione, sia lato client che lato server, sono memorizzati in **repository specifici** che fungono da "cassetti" digitali in cui i certificati vengono conservati e verificati durante l'handshake TLS/mTLS. Ecco una panoramica dei principali luoghi in cui i certificati vengono archiviati e controllati:
+Sì, i certificati utilizzati per l'autenticazione, sia lato client sia lato server, sono memorizzati in **repository specifici** che fungono da **"cassetti digitali"** in cui i certificati sono conservati e verificati durante l'handshake TLS/mTLS. Ecco una panoramica dei principali luoghi dove i certificati sono archiviati e controllati.
 
 #### 1. Truststore
 
 Il **truststore** è una raccolta di certificati radice di autorità di certificazione (CA) fidate. Questo è il "cassetto" dove vengono conservati i certificati delle CA che il sistema considera attendibili.
 
-- **Lato Client**: Quando il client riceve il certificato del server, verifica che il certificato sia stato firmato da una delle CA presenti nel truststore. Se il certificato non può essere tracciato a una CA fidata (cioè, se non c'è una catena valida fino a una CA radice nel truststore), la connessione verrà rifiutata.
+- **Lato Client**: quando il client riceve il certificato del server, verifica che il certificato sia stato firmato da una delle CA presenti nel truststore. Se il certificato non può essere tracciato a una CA fidata (cioè, se non c'è una catena valida fino a una CA radice nel truststore), la connessione verrà rifiutata.
   
-- **Lato Server**: Analogamente, il server verifica il certificato del client confrontandolo con le CA presenti nel suo truststore.
+- **Lato Server**: analogamente, il server verifica il certificato del client confrontandolo con le CA presenti nel suo truststore.
 
-Qualcuno di starà chiedeno dove si trovi il truststore, questo dipende dal sistema operativo.
+Qualcuno si chiederà dove si trovi il truststore, questo dipende dal sistema operativo.
 
-- **Sistemi operativi**: Il truststore è integrato nel sistema operativo. Ad esempio, su:
-  - **Windows**: i certificati fidati si trovano nel **Certificato Root (CA)** in "Gestione Certificati".
-  - **Linux**: il truststore si trova solitamente in directory come `/etc/ssl/certs/` o `/usr/share/ca-certificates/`.
+- **Sistemi operativi**: il truststore è integrato nel sistema operativo. Ad esempio, su:
+  - **Windows**: i certificati fidati si trovano nel **Certificato Root (CA)** in "Gestione Certificati";
+    - **Linux**: il truststore si trova solitamente in directory come `/etc/ssl/certs/` o `/usr/share/ca-certificates/`. La posizione potrebbe differire a seconda della distribuzione Linux;
   - **macOS**: il truststore è gestito tramite il **Keychain Access**, che contiene i certificati radice fidati.
   
-- **Applicazioni**: Alcune applicazioni, come browser web o server, mantengono il proprio truststore separato. Ad esempio, i browser come Firefox usano un truststore indipendente da quello del sistema operativo.
+- **Applicazioni**: alcune applicazioni, come browser web o server, mantengono il proprio truststore separato. Ad esempio, i browser come Firefox usano un truststore indipendente da quello del sistema operativo.
 
 #### 2. Keystore
 
-Il **keystore** è il luogo in cui vengono archiviati i certificati **privati** e le chiavi private associate a un'entità (come un server o un client). È simile a un portafoglio digitale che contiene le credenziali usate per identificarsi durante l'handshake.
+Il **keystore** è il luogo dove sono archiviati i certificati e le chiavi private associate a un'entità (come un server o un client). È simile a un portafoglio digitale che contiene le credenziali usate per identificarsi durante l'handshake.
 
-- **Lato Server**: Il server archivia il proprio certificato e la chiave privata nel keystore. Quando il client richiede il certificato del server, questo viene estratto dal keystore e inviato al client per la verifica.
+- **Lato Server**: il server archivia il proprio certificato e la chiave privata nel keystore. Quando il client richiede il certificato del server, questo viene estratto dal keystore e inviato al client per la verifica.
   
-- **Lato Client**: Se la verifica del client è obbligatoria (come nel caso dell'mTLS), il client invia il proprio certificato estratto dal keystore quando il server lo richiede. Insieme al certificato, il client utilizza la chiave privata memorizzata nel keystore per firmare i messaggi di autenticazione durante l'handshake.
+- **Lato Client**: se la verifica del client è obbligatoria (come nel caso dell'mTLS), il client invia il proprio certificato estratto dal keystore quando il server lo richiede. Insieme al certificato, il client utilizza la chiave privata memorizzata nel keystore per firmare i messaggi di autenticazione durante l'handshake.
 
 Qui la posizione del keystore dipende dal tipo di applicazione e dal sistema operativo.
 
-- **Java KeyStore (JKS)**: Java usa un formato keystore specifico chiamato **JKS**. Questo file può contenere certificati e chiavi private ed è ampiamente usato in ambienti Java, come server applicativi (es. Tomcat, Spring Boot).
-- **PKCS#12 (PFX o P12)**: È un formato standard per contenere certificati e chiavi private. Viene usato su diversi sistemi operativi e server. Ad esempio, i file `.pfx` o `.p12` possono essere caricati in un server come Apache o NGINX.
+- **Java KeyStore (JKS)**: Java usa un formato keystore specifico chiamato **[JKS](https://en.wikipedia.org/wiki/Java_KeyStore)**. Questo file può contenere certificati e chiavi private ed è ampiamente usato in ambienti Java, come server applicativi (es. Tomcat, Spring Boot).
+- **PKCS#12 (PFX o P12)**: è un [formato standard](https://en.wikipedia.org/wiki/PKCS_12) per contenere certificati e chiavi private. Viene usato su diversi sistemi operativi e server. Ad esempio, i file `.pfx` o `.p12` possono essere caricati in un server come Apache o NGINX.
 - **Keychain (macOS)**: Su macOS, i certificati e le chiavi private possono essere memorizzati nel **Keychain**.
+
+Il formato **JKS** è ancora supportato ma sconsigliato l'uso in favore di **PKCS#12**, soprattutto per nuove implementazioni, poiché offre una migliore sicurezza e compatibilità.
 
 #### 3. Verifica tramite CRL o OCSP
 
 Dopo aver estratto i certificati dai rispettivi "cassetti" (truststore o keystore), il client o il server possono verificare la validità del certificato, assicurandosi che non sia stato revocato.
 
-- **CRL (Certificate Revocation List)**: È un elenco pubblicato dalle CA che elenca i certificati revocati. Durante l'handshake, il client o il server possono consultare questa lista per verificare se il certificato è stato revocato.
-- **OCSP (Online Certificate Status Protocol)**: Invece di scaricare un'intera lista, il sistema può interrogare un server OCSP per verificare in tempo reale se un certificato è stato revocato.
+- **CRL (Certificate Revocation List)**: è un elenco pubblicato dalle CA che elenca i certificati revocati. Durante l'handshake, il client o il server possono consultare questa lista per verificare se il certificato è stato revocato.
+- **OCSP (Online Certificate Status Protocol)**: invece di scaricare un'intera lista, il sistema può interrogare un server OCSP per verificare in tempo reale se un certificato è stato revocato.
 
 Volendo fare un riassunto, ecco un elenco dei principali componenti coinvolti nella gestione dei certificati e nella verifica durante l'handshake TLS/mTLS.
 
-- **Truststore**: Contiene i certificati delle CA radice fidate e viene usato per verificare i certificati ricevuti da client o server. 
-- **Keystore**: Contiene il certificato dell'entità (client o server) e la relativa chiave privata. Viene usato per l'autenticazione.
-- **CRL/OCSP**: Utilizzati per controllare la revoca dei certificati.
+- **Truststore**: contiene i certificati delle CA radice fidate e viene usato per verificare i certificati ricevuti da client o server. 
+- **Keystore**: contiene il certificato dell'entità (client o server) e la relativa chiave privata. Viene usato per l'autenticazione.
+- **CRL/OCSP**: utilizzati per controllare la revoca dei certificati.
 
 In questo modo, i certificati sono archiviati e gestiti nei rispettivi "cassetti" (truststore/keystore), e vengono verificati tramite processi di validazione durante l'handshake TLS/mTLS per garantire la sicurezza e l'integrità della connessione.
+
+Vi posso consigliare di esplorare il progetto su GitHub [docker-apache-ssl-tls-mutual-authentication](https://github.com/amusarra/docker-apache-ssl-tls-mutual-authentication) e il relativo articolo [Docker Image Apache SSL/TLS Mutual Authentication on Azure Cloud](http://bit.ly/2Sm5dU7) per avere un'idea pratica di come implementare mTLS con Apache.
 
 ## Perché gestire mTLS direttamente sull'applicazione?
 
 Sono sicurissimo che qualcuno di voi potrebbe obiettare quanto segue: solitamente in ambienti di produzione, la sicurezza mTLS viene gestita da apparati ad hoc collocati davanti l’applicazione, quindi, quali sono i vantaggi nel configurare mTLS direttamente sull’applicazione?
 
-È vero che in molti ambienti di produzione la sicurezza mTLS viene spesso gestita da dispositivi dedicati, come load balancer o gateway API, che si trovano davanti all’applicazione. Tuttavia, configurare mTLS direttamente sull’applicazione presenta alcuni vantaggi significativi, specialmente in certi scenari e architetture. Di seguito, esploreremo i motivi per cui questa scelta può essere valida.
+È vero che in molti ambienti di produzione la sicurezza mTLS viene spesso gestita da dispositivi dedicati, come load balancer o gateway API, collocati davanti all’applicazione. Tuttavia, configurare mTLS direttamente sull’applicazione presenta alcuni vantaggi significativi, specialmente in certi scenari e architetture. Di seguito, esploreremo i motivi per cui questa scelta può essere valida.
 
 ### Vantaggi di configurare mTLS direttamente sull’applicazione
 
@@ -138,8 +142,8 @@ A seguire vedremo brevemente quali siano i vantaggi principali nell'adozione di 
 
 Configurare mTLS direttamente sull’applicazione consente di avere un controllo più granulare su come e quando l’autenticazione reciproca viene applicata. Ad esempio, puoi decidere:
 
-- Quali endpoint richiedono mTLS e quali no.
-- Diversificare la gestione dei certificati a livello di servizio o microservizio in base alle esigenze di sicurezza specifiche.
+- quali endpoint richiedono mTLS e quali no;
+- diversificare la gestione dei certificati a livello di servizio o microservizio in base alle esigenze di sicurezza specifiche.
 
 Questo tipo di configurazione può essere particolarmente utile in ambienti **multi-tenant** o con **servizi sensibili**, dove i requisiti di sicurezza possono variare da un microservizio all’altro.
 
@@ -147,7 +151,7 @@ Questo tipo di configurazione può essere particolarmente utile in ambienti **mu
 
 In sicurezza informatica, il principio di **difesa in profondità** (vedi sezione [Importanti principi di protezione dell’ISA/IEC 62443](https://www.cybersecurity360.it/outlook/i-nuovi-standard-degli-iacs-che-cosa-sono-e-a-cosa-servono/)) implica la stratificazione di più livelli di protezione. Anche se mTLS viene implementato a livello di gateway o di load balancer, aggiungere un ulteriore strato di sicurezza direttamente nell’applicazione riduce il rischio di compromissioni:
 
-- Se l’infrastruttura del gateway viene bypassata o compromessa, l’applicazione richiede comunque l’autenticazione reciproca per accedere.
+- se l’infrastruttura del gateway viene bypassata o compromessa, l’applicazione richiede comunque l’autenticazione reciproca per accedere.
 
 In questo modo, anche se un attaccante riuscisse a superare un dispositivo di sicurezza a monte, troverebbe comunque un altro livello di protezione all’interno dell’applicazione.
 
@@ -161,11 +165,11 @@ Gestendo mTLS a livello dell’applicazione, puoi garantire una **sicurezza end-
 
 In alcune architetture moderne, come quelle **serverless** o **microservizi in ambienti containerizzati**, l’uso di dispositivi dedicati per la gestione della sicurezza può introdurre complessità e aumentare la latenza nelle comunicazioni. Implementare mTLS direttamente sui microservizi può ridurre la dipendenza da questi dispositivi e semplificare l’architettura complessiva:
 
-- In ambienti dinamici, dove i microservizi si scalano rapidamente, l’uso di **service mesh** (ad esempio [Istio](https://istio.io/)) o configurazioni centralizzate a livello di applicazione può risultare più gestibile rispetto a delegare tutto ai dispositivi di front-end.
+- in ambienti dinamici, dove i microservizi si scalano rapidamente, l’uso di **service mesh** (ad esempio [Istio](https://istio.io/)) o configurazioni centralizzate a livello di applicazione può risultare più gestibile rispetto a delegare tutto ai dispositivi di front-end.
 
 #### 5. Ambienti multi-cloud o ibridi
 
-In contesti **multi-cloud** o **ibridi**, in cui i servizi sono distribuiti su diversi provider o persino on-premise, configurare mTLS direttamente sulle applicazioni garantisce che la sicurezza sia gestita in modo uniforme, indipendentemente da dove vengono eseguite. In questi casi, affidarsi completamente a dispositivi di front-end potrebbe non essere pratico o potrebbe richiedere una complessità aggiuntiva in termini di gestione dei certificati tra provider diversi.
+In contesti **multi-cloud** o **ibridi**, in cui i servizi sono distribuiti su diversi provider o persino on-premise, configurare mTLS direttamente sulle applicazioni garantisce che la sicurezza sia gestita in modo uniforme, indipendentemente da dove siano eseguite. In questi casi, affidarsi completamente a dispositivi di front-end potrebbe non essere pratico o potrebbe richiedere una complessità aggiuntiva in termini di gestione dei certificati tra provider diversi.
 
 #### 6. Indipendenza dai dispositivi di rete
 
@@ -175,23 +179,23 @@ Affidarsi completamente ai dispositivi dedicati per la gestione di mTLS può com
 
 Configurare mTLS direttamente nell’applicazione permette di simulare e testare scenari di sicurezza anche in ambienti di **sviluppo** o **pre-produzione**, senza dover riprodurre l’intera infrastruttura di produzione. In questo modo, i team di sviluppo possono:
 
-- Testare con maggiore precisione le configurazioni di sicurezza che verranno utilizzate in produzione.
-- Implementare flussi di **DevSecOps** più fluidi, dove la sicurezza viene verificata in ogni fase del ciclo di vita del software.
+- testare con maggiore precisione le configurazioni di sicurezza che verranno utilizzate in produzione;
+- implementare flussi di **[DevSecOps](https://it.wikipedia.org/wiki/DevOps)** più fluidi, dove la sicurezza viene verificata in ogni fase del ciclo di vita del software.
 
 #### 8. Personalizzazione della logica di autenticazione
 
 In alcuni casi, potrebbe essere necessario **personalizzare la logica di autenticazione** in base alle esigenze specifiche dell’applicazione. Configurare mTLS direttamente nel codice o nelle configurazioni dell’applicazione permette di introdurre logiche personalizzate come:
 
-- Validazioni aggiuntive sui certificati.
-- Limitare l’accesso a specifici client in base a metadati contenuti nei certificati.
+- validazioni aggiuntive sui certificati;
+- limitare l’accesso a specifici client in base a metadati contenuti nei certificati.
 
 ### Quando usare dispositivi dedicati per la gestione di mTLS?
 
-Nonostante i vantaggi della configurazione di mTLS direttamente nell’applicazione, ci sono contesti in cui l’uso di dispositivi dedicati rimane una scelta preferibile:
+Nonostante i vantaggi della configurazione di mTLS direttamente nell’applicazione, ci sono contesti in cui l’uso di dispositivi dedicati rimane una scelta preferibile.
 
-- **Scalabilità centralizzata**: In ambienti con molti servizi e microservizi, potrebbe essere più semplice e scalabile gestire mTLS a livello di gateway, piuttosto che applicare la stessa configurazione a decine o centinaia di microservizi.
-- **Performance e ottimizzazione**: Gli apparati specializzati (come load balancer hardware) possono essere ottimizzati per gestire rapidamente grandi quantità di connessioni TLS e mTLS, riducendo la latenza e scaricando l’onere crittografico dalle applicazioni.
-- **Amministrazione centralizzata**: In organizzazioni di grandi dimensioni con team separati, delegare la gestione di mTLS a dispositivi dedicati può ridurre la complessità di gestione da parte degli sviluppatori, permettendo ai team di rete e sicurezza di concentrarsi esclusivamente su questi aspetti.
+- **Scalabilità centralizzata**: in ambienti con molti servizi e microservizi, potrebbe essere più semplice e scalabile gestire mTLS a livello di gateway, piuttosto che applicare la stessa configurazione a decine o centinaia di microservizi.
+- **Performance e ottimizzazione**: gli apparati specializzati (come load balancer hardware) possono essere ottimizzati per gestire rapidamente grandi quantità di connessioni TLS e mTLS, riducendo la latenza e scaricando l’onere crittografico dalle applicazioni.
+- **Amministrazione centralizzata**: in organizzazioni di grandi dimensioni con team separati, delegare la gestione di mTLS a dispositivi dedicati può ridurre la complessità di gestione da parte degli sviluppatori, permettendo ai team di rete e sicurezza di concentrarsi esclusivamente su questi aspetti.
 
 ### In conclusione
 
@@ -210,7 +214,7 @@ Utilizzando Quarkus andremo a implementare un classico scenario dove una risorsa
    1. se il certificato è valido, **Quarkus** elabora la richiesta di accesso alla risorsa e restituisce i dati della risorsa;
    2. se il certificato non è valido, **Quarkus** restituisce un errore, negando l’accesso alla risorsa.
 
-Sul sequence diagram, sono stati omessi volutamente alcune delle fasi del processo TLS Handshake per dare risalato a quelle fasi che contribuisco al meccanismo di mutua autenticazione. Per il processo completo, fare riferimento al capitolo _Cos’è l’autenticazione reciproca TLS (mTLS)_.
+Sul sequence diagram sono stati omessi volutamente alcune delle fasi del processo TLS Handshake per dare risalato a quelle fasi che contribuisco al meccanismo di mutua autenticazione. Per il processo completo, fare riferimento al capitolo _Cos’è l’autenticazione reciproca TLS (mTLS)_.
 
 ```mermaid
 sequenceDiagram
@@ -244,7 +248,7 @@ Per realizzare la soluzione mostrata nel diagramma precedente, avremo bisogno de
 - Certificati TLS per il client e il server
 - OpenSSL per gestire la generazione dei certificati
 
-Nel corso dell'implementazione andremo a utilizzare diversi componenti di Quarkus che rientrano nel parona dell'**architettura di sicurezza** di Quarkus e per cui invito a leggere le seguenti risorse:
+Nel corso dell'implementazione andremo a utilizzare diversi componenti di Quarkus che rientrano nel panorama dell'**architettura di sicurezza** di Quarkus e per cui invito a leggere le seguenti risorse.
 
 1. [Quarkus Security architecture](https://quarkus.io/guides/security-architecture)
 2. [Quarkus Security overview](https://quarkus.io/guides/security-overview)
@@ -252,13 +256,13 @@ Nel corso dell'implementazione andremo a utilizzare diversi componenti di Quarku
 4. [Authorization of web endpoints](https://quarkus.io/guides/security-authorize-web-endpoints-reference)
 5. [TLS registry reference](https://quarkus.io/guides/tls-registry-reference)
 
-La figura 3 mostra l'architettura di sicurezza di Quarkus, dove ho volutamente evendenziare lo strato che riguarda il componente **[SecurityIdentityAugmentor](https://quarkus.io/guides/security-architecture#securityidentityaugmentor)** perché nel corso dell'articolo vedremo a cosa serve questo componente e come implementare una personalizzazione utile per i nostri scopi.
+La figura 3 mostra l'architettura di sicurezza di Quarkus, dove ho volutamente evidenziare lo strato che riguarda il componente **[SecurityIdentityAugmentor](https://quarkus.io/guides/security-architecture#securityidentityaugmentor)** perché nel corso dell'articolo vedremo a cosa serve questo componente e come implementare una personalizzazione utile per i nostri scopi.
 
 ![Quarkus Security architecture process flow](resources/images/quarkus-security-architecture-overview.png)
 
 Figura 3 - Quarkus Security Architecture e flow del processo di autenticazione e autorizzazione (fonte Quarkus.io)
 
-Tra l'elenco delle risorse ho menzionato il **TLS Registry** che utilizzermo per potare a termine con successo l'implementazione della soluzione. 
+Tra l'elenco delle risorse ho menzionato il **TLS Registry** che utilizzeremo per portare a termine con successo l'implementazione della soluzione. 
 
 **Cos’è il TLS Registry di Quarkus?** È un'estensione di Quarkus che centralizza la configurazione TLS per l'applicazione. Consente di definire la configurazione TLS in un unico luogo e di farvi riferimento da più punti nell'applicazione. Nel corso dell'articolo vedremo come ci verrà incontro.
 
@@ -269,11 +273,11 @@ Siamo certi del fatto che dobbiamo implementare la nostra applicazione per il su
 | ID      | Requisito                                           | Descrizione                                                  |
 | ------- | --------------------------------------------------- | ------------------------------------------------------------ |
 | 1       | Autenticazione mTLS                                 | È richiesto che l'applicazione supporti mTLS come meccanismo di autenticazione utilizzando certificati in formato PEM e PKCS#12. |
-| 2       | Private end-point REST                              | È richiesto la realizzazione di due end-point REST il cui accesso deve essere garantito solo ai client che si presentano con un certificato client avente determinate carratteristiche (vedi capitolo *Generazione dei certificati*).<br /><br />Il primo end-point deve essere definito con la URI `/v1/connection-info/info` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano la connessione instaurata.<br /><br />Il secondo end-point deve essere definito con la URI  `/v1/connection-info/user-identiy` con metodo `POST` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano l'indentità del client che ha richiesto l'accesso alla risorsa. |
+| 2       | Private end-point REST                              | È richiesto la realizzazione di due end-point REST il cui accesso deve essere garantito solo ai client che si presentino con un certificato client avente determinate carratteristiche (vedi capitolo *Generazione dei certificati*).<br /><br />Il primo end-point deve essere definito con la URI `/v1/connection-info/info` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano la connessione instaurata.<br /><br />Il secondo end-point deve essere definito con la URI  `/v1/connection-info/user-identity` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano l'indentità del client che ha richiesto l'accesso alla risorsa. |
 | 3       | Mapping automatico dei ruoli                        | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sui **ruoli** gestisti da Quarkus (vedi [Authorization of web endpoints](https://quarkus.io/guides/security-authorize-web-endpoints-reference)). Per i dettagli sulla struttura del certificato client fare riferimento al capitolo *Generazione dei certificati*. |
 | 4       | Mapping automatico degli attributi d'identità       | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sugli **Identity Attributes** del client che ha richiesto l'accesso alla risorsa. Per i dettagli sulla struttura del certificato client fare riferimento al capitolo *Generazione dei certificati*. |
 | 5       | Definizione delle policy di accesso ai servizi Rest | È richiesto che l'applicazione definisca una policy chiamata per esempio `role-policy-cert` che definisca i ruoli *User* e *Administrator* come abilitati per l'accesso alle due risorse REST descritte sul requisito numero 1. |
-| 6_BONUS | Accesso tramite CIE (Carta Identità Elettronica)    | È richiesto che l'applicazione sia capace di fare accedere agli end-point descritti dal requisito numero 2, i client che si presentino con un certificato CIE valido estendendo al gestione delle policy e ruoli. |
+| 6_BONUS | Integrazione Trusted Service List (TSL)             | È richiesto che l'applicazione sia integrata con il **Trusted Service List (TSL)** Italiano per l'acquisizione delle Certification Authority dei fornitori di servizi fiduciari qualificati  e accreditati per il rilascio di certificati digitali. Questa è una predisposizione per consetire poi l'accesso all'applicazione in mTLS tramite per esempio CIE e CNS. |
 
 Tabella 1 - Requisiti che l'applicazione Quarkus deve implementare.
 
@@ -283,31 +287,32 @@ Per gestire correttamente la mutua autenticazione allo scopo di fare anche dei t
 
 1. un certificato di [Certificate Authority (CA)](https://it.wikipedia.org/wiki/Certificate_authority);
 2. un certificato server per il servizio HTTPS, quest'ultimo basato su [Vert.x Core](https://vertx.io/docs/vertx-core/java/) integrato all'interno di Quarkus;
-3. un set di [certificati client](https://en.wikipedia.org/wiki/Client_certificate) che abbiamo le caretteristiche necessarie per accedere ai servizi (vedi requisiti tre, quattro e sei)
+3. un set di [certificati client](https://en.wikipedia.org/wiki/Client_certificate) che devono avere specifiche caratteristiche per accedere ai servizi (vedi requisiti tre, quattro e sei).
 
-Per il nostro ambiete di sviluppo, siamo autonomi nella generazione dei certificati ma al momento vediamo quali sono le caratteriste dei certificati che dovremo generare e che sono mostrate nella tabella a seguire.
+Per il nostro ambiente di sviluppo siamo autonomi nella generazione dei certificati ma al momento vediamo quali sono le caratteriste dei certificati che dovremo generare e che sono mostrate nella tabella a seguire.
 
 | Tipo   | CN                                                          | SAN                                                          | O             | OU                | L         | ST      | C        | Valitità  | Issuer                |
 | ------ | ----------------------------------------------------------- | ------------------------------------------------------------ | ------------- | ----------------- | --------- | ------- | -------- | --------- | --------------------- |
 | CA     | Dontesta CA                                                 |                                                              | Dontesta      | IT Labs           | Bronte    | Catania | IT       | 5 anni    | self                  |
 | Server | rd.quarkus.dontesta.it                                      | admin.quarkus.dontesta.it, blog.quarkus.dontesta.it, localhost | Dontesta      | IT Labs           | Bronte    | Catania | IT       | 1 anno    | Dontesta CA, Dontesta |
-| Client | #client-id (può essere un qualunque tipo di identificatore) |                                                              | #Organization | #OrganizationUnit | #Locality | #State  | #Country | #Validity | #Issure               |
+| Client | #client-id (può essere un qualunque tipo di identificatore) |                                                              | #Organization | #OrganizationUnit | #Locality | #State  | #Country | #Validity | #Issuer               |
 
 Tabella 2 - Caratteristiche dei certificati da generare
 
-Per soddisfare il requisto tre e quattro, il certificato client deve essere creato con le seguenti caratteristiche:
+**Nota**: gli FQDN (Fully Qualified Domain Name) usati nei certificati sono puramente di esempio e andranno poi sostituiti con quelli reali.
 
-1. **clientAuth in extendedKeyUsage**: l’extendedKeyUsage con il valore **clientAuth** indica che il certificato può essere utilizzato per l’autenticazione del client, in particolare in contesti mTLS o altre situazioni in cui un client deve dimostrare la propria identità a un server. L’**Object Identifier (OID)** associato a clientAuth è 1.3.6.1.5.5.7.3.2, ed è riconosciuto universalmente per identificare certificati che possono essere utilizzati per l’autenticazione dei client;
+Per soddisfare il requisito tre e quattro, il certificato client deve essere creato con le seguenti caratteristiche:
+
+1. **clientAuth in extendedKeyUsage**: l’extendedKeyUsage con il valore **clientAuth** indica che il certificato può essere utilizzato per l’autenticazione del client in contesti mTLS o altre situazioni in cui un client deve dimostrare la propria identità a un server. L’**[Object Identifier (OID)](https://en.wikipedia.org/wiki/Object_identifier)** associato a clientAuth è 1.3.6.1.5.5.7.3.2, ed è riconosciuto universalmente per identificare certificati che possono essere utilizzati per l’autenticazione dei client;
 2. **estensione personalizzate**: per gestire i ruoli e attributi, i certificati client dovranno avere le seguenti estensioni personalizzate:
-
    1. 1.3.6.1.4.1.99999.1 = ASN1:UTF8String:Role=${ext_cert_role}
    2. 1.3.6.1.4.1.99999.2 = ASN1:UTF8String:DeviceId=${ext_cert_device_id}
 
-Le due estensioni personalizzate che sono identificate con OID della classe privata `1.3.6.1.4.1` dove `99999` rappresenta un numero riservato per un’ipotetica organizzazione, sono usate rispettivamente per indicare ruoli e il deviceId. I placeholder `${ext_cert_role}` e `${ext_cert_device_id}` conterranno i rispettivi valori per Role e DeviceId.
+Le due estensioni personalizzate che sono identificate con OID della classe privata `1.3.6.1.4.1` dove `99999` rappresenta un numero riservato per un’ipotetica organizzazione, sono usate rispettivamente per indicare **ruoli** e il **deviceId**. I placeholder `${ext_cert_role}` e `${ext_cert_device_id}` conterranno i rispettivi valori per Role e DeviceId.
 
 L'estensione personalizzata avente OID  `1.3.6.1.4.1.99999.1`  deve contenere uno più ruoli attraverso una stringa che dovrà rispettare il pattern `^Role=([A-Za-z]+(?:,[A-Za-z]+)*+)$`.
 
-L'estesione personalizzata avente OID `1.3.6.1.4.1.99999.2` deve contenere l'identificativo di un ipotetico deviceId il cui valore deve essere calcolato secondo un regola ben definita e che vedremo successivamente.
+L'estensione personalizzata avente OID `1.3.6.1.4.1.99999.2` deve contenere l'identificativo di un ipotetico deviceId il cui valore deve essere calcolato secondo un regola ben definita e che vedremo successivamente.
 
 In termini di configurazione OpenSSL, a seguire è mostrato un esempio di configurazione da usare per la generazione dei certificati client usando OpenSSL.
 
@@ -371,7 +376,7 @@ Configurazione 2 - Estratto della chiave pubblica di un certificato client gener
 
 La generazione del DeviceId dovrà avvenire nel modo seguente:
 
-1. combina il timestamp corrente, un [UUID (Universally Unique Identifier)](https://it.wikipedia.org/wiki/Universally_unique_identifier) generato e l’hostname del dispositivo per creare una stringa unica. Le singole informazioni devono essere seperate dal carattere # (hash o diesis);
+1. combina il timestamp corrente, un [UUID (Universally Unique Identifier)](https://it.wikipedia.org/wiki/Universally_unique_identifier) generato e l’hostname del dispositivo per creare una stringa unica. Le singole informazioni devono essere separate dal carattere # (hash o diesis);
 2. genera un [HMAC (Hash-based Message Authentication Code)](https://it.wikipedia.org/wiki/HMAC) usando SHA-256 e una chiave segreta;
 3. combina queste informazioni e codifica il risultato in Base64.
 
@@ -386,7 +391,7 @@ A seguire è mostrato il flow di quanto descritto in precedenza per generare e v
 
 ```mermaid
 graph TD
-    A[Start] --> B{Command?}
+    A((Start)) --> B{Command?}
     B --> |Generate| C[Collect timestamp, UUID, and hostname]
     C --> D[Create combined string]
     D --> E[Generate HMAC SHA-256 with secret key]
@@ -398,7 +403,7 @@ graph TD
     J --> K{Compare HMACs}
     K --> |Match| L[Device ID verified]
     K --> |Mismatch| M[Verification failed]
-    G --> N[End]
+    G --> N((End))
     L --> N
     M --> N
 ```
@@ -464,7 +469,7 @@ sequenceDiagram
 
 Figura 5 - Sequence Diagram che mostra il funzionamento di un ipotetico script di generazione e verifica del DeviceId.
 
-### Struttura JSON di risposta dei servizi Rest
+### Struttura JSON di risposta dei servizi REST
 
 A seguire lo schema del JSON di risposta per il servizio `/api/v1/connection-info/user-identity` e un esempio dell'istanza.
 
@@ -792,14 +797,14 @@ Source Code 5 - Esempio di risposta JSON del servizio `/api/v1/connection-info/i
 
 ## Requisiti software
 
-Per sviluppare la nostra soluzione mTLS, abbiamo necessità di una set di strumenti software che potremmo dividere in due categorie.
+Per sviluppare la nostra soluzione mTLS, abbiamo necessità di un set di strumenti software che potremmo dividere in due categorie.
 
 1. **Sviluppo**
    1. Java 21
    2. Maven 3.9.x
    3. Quarkus 3.14.x
    4. Quarkus CLI (opzionale ma consigliato)
-   5. Git (opzionale)
+   5. Git (opzionale ma consigliato)
 2. **Gestione certificati TLS** (opzionali ma consigliato)
    1. bash 5.2.x | zsh 5.x | GitBash 2.46
    2. OpenSSL 3.x
@@ -815,13 +820,13 @@ Git è opzionale ma consigliato se volete seguire gli step di questo articolo e 
 
 Per quanto riguarda i tool indicati per la gestione dei certificati TLS, non sono obbligatori ma ritengo utile l'installazione per provare con mano la gestione dei certificati TLS (client e server).
 
-La gestione dei certificati TLS è in genere demandata a organi specifici all'interno di un'organizzazione ma noi sviluppatori dobbiamo essere "smart" ed essere capaci di gestire i certificati TLS per il nostro ambiente di sviluppo. Quarkus, in tal senso ha aggiunto dei tool [Quarkus CLI commands and development CA (Certificate Authority)](https://quarkus.io/guides/tls-registry-reference#quarkus-cli-commands-and-development-ca-certificate-authority) e [Automatic certificate management with Let’s Encrypt](https://quarkus.io/guides/tls-registry-reference#lets-encrypt) per la gestione dei certificati TLS che però hanno qualche limite, per questo motivo ho deciso di realizzare un tool ad hoc che vedremo poi nel corso di questo articolo.
+La gestione dei certificati TLS è in genere demandata a organi specifici all'interno di un'organizzazione ma noi sviluppatori dobbiamo essere "smart" ed essere capaci di gestire i certificati TLS per il nostro ambiente di sviluppo. Quarkus, in tal senso ha aggiunto dei tool [Quarkus CLI commands and development CA (Certificate Authority)](https://quarkus.io/guides/tls-registry-reference#quarkus-cli-commands-and-development-ca-certificate-authority) e [Automatic certificate management with Let’s Encrypt](https://quarkus.io/guides/tls-registry-reference#lets-encrypt) per la gestione dei certificati TLS che però hanno qualche limite in termini di flessibilità, per questo motivo ho deciso di realizzare un tool ad hoc che vedremo poi nel corso di questo articolo.
 
-Soddisfati i requisiti software, siamo nelle condizioni di poter iniziare a creare il nostro progetto software.
+Soddisfati i requisiti software, siamo nelle condizioni di poter iniziare a creare il nostro progetto software step by step e che rispetti i requisiti descritti al capitolo *Requisiti dell'applicazione Quarkus*.
 
 ## Implementazione della soluzione
 
-Adesso che abbiamo raccolto tutti i pezzi, finalmente possiamo mettere le mani al codice implementando l'applicazione Quarkus così come esplicitata dai requisiti descritti al capitolo *Requisiti dell'applicazione Quarkus*. Gli step da seguire per implemetare i requisiti dall'uno al cinque sono indicati a seguire. Per quanto riguarda il requisito bonus, lo affronteremo a parte.
+Adesso che abbiamo raccolto tutti i pezzi, possiamo finalmente mettere le mani al codice realizzando l'applicazione Quarkus e che soddisfi i requisiti descritti al capitolo *Requisiti dell'applicazione Quarkus*. Gli step da seguire per implemetare i requisiti dall'uno al cinque sono indicati a seguire. Per quanto riguarda il requisito bonus, lo affronteremo a parte.
 
 1. Creazione dell'applicazione Quarkus tramite CLI specificando le estensioni necessarie.
 2. Generazione del certificato di Certification Authority.
@@ -830,14 +835,14 @@ Adesso che abbiamo raccolto tutti i pezzi, finalmente possiamo mettere le mani a
 5. Test della configurazione HTTPS/TLS.
 6. Abilitazione del mTLS.
 7. Implementazione dei componenti [SecurityIdentityAugmentor](https://quarkus.io/guides/security-architecture#securityidentityaugmentor) per il mapping dei ruoli e attributi.
-8. Implementazione dei servizi Rest.
+8. Implementazione dei servizi REST.
 9. Configurazione delle policy di accesso ai servizi REST.
 10. Generazione di un set di certificati client per eseguire dei test di accesso (positivi e negativi).
 11. Test della configurazione mTLS.
 
-Durante l'esecuzione degli step faremo riferimento al repository GitHub [quarkus-mtls-auth-tutorial](https://github.com/amusarra/quarkus-mtls-auth-tutorial) attraverso l'uso di tag per identificare gli step, per cui basta effetuare il clone in questo modo: `git clone -b <nome-tag> https://github.com/amusarra/quarkus-mtls-auth-tutorial.git`. 
+Durante l'esecuzione degli step faremo riferimento al repository GitHub [quarkus-mtls-auth-tutorial](https://github.com/amusarra/quarkus-mtls-auth-tutorial) attraverso l'uso di tag per identificare gli step, per cui basta effettuare il clone in questo modo: `git clone -b <nome-tag> https://github.com/amusarra/quarkus-mtls-auth-tutorial.git`. 
 
-Il progetto completo della soluzione è invece disponibile sul repository GitHub [Quarkus mTLS Auth](https://github.com/amusarra/quarkus-mtls-auth).
+Tra il repository dedicato al tutorial e quello contenente il progetto completo della soluzione (disponibile sul repository GitHub [Quarkus mTLS Auth](https://github.com/amusarra/quarkus-mtls-auth)), potreste notare delle differenze come per esempio la presenza degli unit-test ma i livello di funzionalità sono gli stessi.
 
 ### Step 1 - Creazione dell'applicazione Quarkus via CLI
 
@@ -852,7 +857,7 @@ Le estensioni Quarkus di cui abbiamo bisogno sono:
 5. io.quarkus:quarkus-security
 6. io.quarkus:quarkus-elytron-security-common
 
-Procediamo con la crezione del progetto Quarkus tramite la CLI e le estensioni indicate. Per fare ciò, eseguire il comando a seguire (non necessario nel cui abbiate eseguito il clone del repositori GitHub `quarkus-mtls-auth-tutorial` con il tag di riferimento per questo step).
+Procediamo con la creazione del progetto Quarkus tramite la CLI e le estensioni indicate. Per fare ciò, eseguire il comando a seguire (non necessario nel caso in cui abbiate eseguito il clone del repository GitHub `quarkus-mtls-auth-tutorial` con il tag di riferimento per questo step).
 
 ```shell
 # Create initial Quarkus project via Quarkus CLI
@@ -890,7 +895,7 @@ tls-mutual-auth
 6 directories, 9 files
 ```
 
-Console 2 - Struttura del proggetto Quarkus creato tramite la CLI
+Console 2 - Struttura del progetto Quarkus creato tramite la CLI
 
 ### Step 2 - Generazione del certificato di Certification Authority
 
@@ -898,14 +903,14 @@ Il tag di riferimento per questo step è [tutorial-step-2-generate-ca](https://g
 
 Per generare il certificato della **Certification Authority** secondo quanto indicato in tabella 2, procederemo utilizzando lo script `certs_manager.sh`. Questo script è stato creato appositamente per questo tutorial e si trova all'interno del progetto Quarkus.
 
-Per eseguire lo script sulla propria macchina di sviluppo, è necessario che i requisti software per *Gestione certificati TLS* (vedi capitolo *Requisiti software*) siano soddisfatti.
+Per eseguire lo script sulla propria macchina di sviluppo, è necessario che i requisiti software per *Gestione certificati TLS* (vedi capitolo *Requisiti software*) siano soddisfatti.
 
 Per generare il certificato della CA dobbiamo eseguire il comando a seguire dalla home del progetto. L'esecuzione del comando indicato (che si trova in `src/main/shell/certs-manager/certs_manager.sh`), creerà all'interno della directory `src/main/resources/certs` i seguenti file:
 
 1. ca_private_key.pem: chiave privata del certificato in formato [PEM (Privacy-Enhanced Mail)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail);
 2. ca_private_key.pem.password: file contenente la password della chiave private;
 3. ca_cert.pem: chiave certificato in formato PEM;
-4. ca_cert.p12: formato [PKCS#12](https://en.wikipedia.org/wiki/PKCS_12) del certificato.
+4. ca_cert.p12: formato PKCS#12 del certificato.
 
 ```shell
 # Generate the CA
@@ -1007,6 +1012,8 @@ All files generated in: src/main/resources/certs
 
 Console 6 - Output del comando che ha generato il certificato del server firmato dalla CA.
 
+Per maggiori informazioni sullo script `certs_manager.sh`, eseguire il comando `./src/main/shell/certs-manager/certs_manager.sh` per ottenere la lista dei parametri che gestisce e la loro descrizione.
+
 ### Step 4 - Configurazione di Quarkus per l'attivazione di HTTPS
 
 Il tag di riferimento per questo step è [tutorial-step-4-configure-https](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-step-4-config-tls-1/src/main/resources).
@@ -1014,7 +1021,7 @@ Il tag di riferimento per questo step è [tutorial-step-4-configure-https](https
 Adesso che abbiamo generato i certificati della CA e del server, possiamo procedere con la configurazione di Quarkus per l'attivazione di HTTPS. Per fare ciò, dobbiamo modificare il file `src/main/resources/application.properties` aggiungendo le proprietà necessarie affinché:
 
 1. l'applicazione Quarkus utilizzi il certificato PKCS#12 del server;
-2. l'applicazione Quarkus utilizzi il certificato PEM della CA per essere aggiunto al trust-store;
+2. l'applicazione Quarkus utilizzi il certificato PEM della CA per essere aggiunto al truststore;
 3. l'applicazione Quarkus accetti solo richieste HTTPS;
 4. l'applicazione Quarkus utilizzi solo il protocollo [TLSv1.3](https://en.wikipedia.org/wiki/Transport_Layer_Security);
 5. l'applicazione Quarkus utilizzi la configurazione TLS denominata `https`.
@@ -1053,7 +1060,7 @@ quarkus.http.tls-configuration-name=https
 
 Application Properties 1 - Configurazione di Quarkus per l'attivazione di HTTPS
 
-In questa configurazione sono state utilizzate le proprietà che fanno parte del componente Quarkus TLS Registry, in particolare la caratteristica delle **named configuration** che nel nostro caso si chiama `https` che è stata definita dalla proprietà `quarkus.http.tls-configuration-name` nel file `application.properties`. Questa possibilità è stata introdotta in Quarkus 3.14 e permette di configurare in modo centralizzato le configurazioni TLS per l'applicazione Quarkus. Per maggiori informazioni, vi rimando alla [documentazione ufficiale](https://quarkus.io/guides/tls-registry-reference).
+In questa configurazione sono state utilizzate le proprietà che fanno parte del componente Quarkus TLS Registry e in particolare la caratteristica delle **named configuration** che nel nostro caso si chiama `https` , definita dalla proprietà `quarkus.http.tls-configuration-name` nel file `application.properties`. Questa possibilità è stata introdotta in Quarkus 3.14 e permette di configurare in modo centralizzato le configurazioni TLS per l'applicazione Quarkus. Per maggiori informazioni, vi rimando alla [documentazione ufficiale](https://quarkus.io/guides/tls-registry-reference).
 
 Adesso che abbiamo configurato l'applicazione Quarkus per l'attivazione del protocollo HTTPS, potremo procedere con il test della configurazione HTTPS/TLS.
 
@@ -1075,7 +1082,7 @@ __  ____  __  _____   ___  __ ____  ______
 
 Console 7 - Output del comando `quarkus:dev` che mostra l'applicazione Quarkus in esecuzione
 
-Se l’applicazione Quarkus è in esecuzione e accetta solo richieste HTTPS, il comando `curl` dovrebbe restituire un messaggio di errore che indica il rifiuto della connessione. Questo comportamento è atteso, poiché l’applicazione è configurata per accettare esclusivamente richieste HTTPS.
+Se l’applicazione Quarkus è in esecuzione e accetta solo richieste HTTPS, il comando `curl` dovrebbe restituire un messaggio di errore che indica il rifiuto della connessione. Questo comportamento è quello atteso, poiché l’applicazione è configurata per accettare esclusivamente richieste HTTPS.
 
 ```shell
 # Verify that the application is running and only accepts HTTPS requests.
@@ -1147,10 +1154,10 @@ Console 10 - Output del comando `curl` che ha testato la configurazione HTTPS/TL
 I più attenti avranno notato dall'output del comando precedente le seguenti informazioni:
 
 1. la connessione TLS è stata stabilita con successo utilizzando il protocollo TLSv1.3;
-2. grazie a `ALPN`, il server ha accettato il protocollo HTTP/2. Su Quarkus il protocollo HTTP/2 è abilitato di default;
+2. grazie a **[ALPN](https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation)**, il server ha accettato il protocollo HTTP/2. Su Quarkus il protocollo HTTP/2 è abilitato di default;
 3. il server ha risposto con il certificato del server creato in precedenza e firmato dalla CA sempre creata in precedenza.
 
-Dobbiamo eseguire l’ultimo test, ovvero verificare che l’applicazione Quarkus accetti solo connessioni HTTPS con protocollo TLSv1.3. Questa volta utilizzeremo il comando OpenSSL, come indicato di seguito.
+Dobbiamo eseguire l’ultimo test, ovvero, verificare che l’applicazione Quarkus accetti solo connessioni HTTPS con protocollo TLSv1.3. Questa volta utilizzeremo il comando OpenSSL, come indicato di seguito.
 
 ```shell
 # Verify that the application only accepts HTTPS requests with the TLSv1.3 protocol.
@@ -1160,7 +1167,7 @@ openssl s_client -connect localhost:8443 -servername rd.quarkus.dontesta.it -sho
 
 Console 11 - Test della configurazione HTTPS/TLS
 
-In questo caso, il comando `openssl` dovrebbe restituire un messaggio di errore che indica che la connessione è stata rifiutata e in particolare `tlsv1 alert protocol version:ssl/record/rec_layer_s3.c:907:SSL alert number 70`. Questo è il comportamento atteso, poiché l'applicazione Quarkus accetta solo richieste HTTPS con il protocollo TLSv1.3.
+In questo caso il comando `openssl` dovrebbe restituire un messaggio di errore che indica che la connessione è stata rifiutata e in particolare `tlsv1 alert protocol version:ssl/record/rec_layer_s3.c:907:SSL alert number 70`. Questo è il comportamento atteso poiché l'applicazione Quarkus accetta solo richieste HTTPS con il protocollo TLSv1.3.
 
 ### Step 6 - Abilitazione del mTLS
 
@@ -1249,7 +1256,7 @@ Console 13 - Output del comando `curl` che ha testato la configurazione mTLS
 
 Dall'output del comando è possibile notare la richiesta del certificato client da parte del server (`(304) (IN), TLS handshake, Request CERT (13)`). Il server ha rifiutato la connessione poiché non è stato fornito un certificato client valido (in questo caso nessun certificato è stato inviato). Questo è il comportamento atteso poiché l'applicazione Quarkus richiede obbligatoriamente l'autenticazione del client.
 
-A questo punto, abbiamo configurato l’applicazione Quarkus per l’attivazione del mTLS e verificato che accetti solo richieste HTTPS con protocollo TLSv1.3, richiedendo l’autenticazione del client. Adesso possiamo procedere con l'implementazione dei componenti `SecurityIdentityAugmentor` per il mapping dei ruoli e attributi.
+A questo punto, abbiamo configurato l’applicazione Quarkus per l’attivazione di mTLS e verificato che accetti solo richieste HTTPS con protocollo TLSv1.3, richiedendo l’autenticazione del client. Adesso possiamo procedere con l'implementazione dei componenti `SecurityIdentityAugmentor` per il mapping dei ruoli e attributi.
 
 ### Step 7 - Implementazione dei componenti SecurityIdentityAugmentor
 
@@ -1269,13 +1276,13 @@ Per raggiungere l'obiettivo andremo a implementare tre classi.
 
 Le classi `AttributesAugmentor`, `RolesAugmentor` e `OidSecurityIdentityAugmentor` fanno parte del package [it.dontesta.quarkus.tls.auth.ws.security.identity](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-step-7-impl-security-identity-augmentor/src/main/java/it/dontesta/quarkus/tls/auth/ws/security/identity). A seguire i sequence diagram che illustrano il flusso di esecuzione delle classi implementate.
 
-Il primo sequence diagram per `AttributesAugmentor.augment()` prevede i seguenti attori:
+Il primo sequence diagram per `AttributesAugmentor.augment()` prevede i seguenti attori.
 
 1. **Client**: il sistema o servizio che invoca la classe per l’operazione di autenticazione.
-2. **AttributesAugmentor**: la classe principale che manipola il SecurityIdentity e ne arricchisce gli attributi con informazioni dal certificato.
+2. **AttributesAugmentor**: la classe principale che manipola il `SecurityIdentity` e ne arricchisce gli attributi con informazioni dal certificato.
 3. **CertificateCredential**: un oggetto che contiene il certificato X.509 dal quale vengono estratti gli attributi.
 4. **SecurityIdentity**: l’identità di sicurezza che viene aumentata con nuovi attributi.
-5. **QuarkusSecurityIdentity.Builder**: il costruttore utilizzato per modificare e creare una nuova istanza di SecurityIdentity arricchita.
+5. **QuarkusSecurityIdentity.Builder**: il costruttore utilizzato per modificare e creare una nuova istanza di `SecurityIdentity` arricchita.
 6. **CertificateUtil**: utility che decodifica il valore del certificato.
 7. **X509Certificate**: il certificato dal quale viene estratto l’ID del dispositivo.
 
@@ -1329,9 +1336,9 @@ sequenceDiagram
    end
 ```
 
-Figura 6 - Flusso di esecuzione di `AttributesAugmentor.augment()`.
+Figura 6 - Sequence Diagram del flusso di esecuzione di `AttributesAugmentor.augment()`.
 
-Il secondo sequence diagram per `RolesAugmentor.augment()` prevede gli stessi attori del diagramma precedente con *RolesAugmentor* al posto di *AttributesAugmentor* che manipola il SecurityIdentity e ne arricchisce i ruoli con informazioni dal certificato.
+Il secondo sequence diagram per `RolesAugmentor.augment()` prevede gli stessi attori del diagramma precedente con `RolesAugmentor` al posto di `AttributesAugmentor` che manipola il `SecurityIdentity` e ne arricchisce i ruoli con informazioni dal certificato.
 
 ```mermaid
 sequenceDiagram
@@ -1387,9 +1394,9 @@ sequenceDiagram
     end
 ```
 
-Figura 7 - Flusso di esecuzione di `RolesAugmentor.augment()`.
+Figura 7 - Sequence Diagrama del flusso di esecuzione di `RolesAugmentor.augment()`.
 
-Il terzo diagramma di sequenza relativo a `OidSecurityIdentityAugmentor.augment()` evidenzia che, in questo caso, il componente non agisce direttamente su SecurityIdentity, ma si limita a verificare che il valore dell’OID che identifica il DeviceId sia presente e valido secondo l’algoritmo descritto nel capitolo *Algoritmo per la generazione del DeviceId*
+Il terzo diagramma di sequenza relativo a `OidSecurityIdentityAugmentor.augment()` evidenzia che, in questo caso, il componente non agisce direttamente su `SecurityIdentity`, ma si limita a verificare che il valore dell’OID che identifica il DeviceId sia presente e valido secondo l’algoritmo descritto nel capitolo *Algoritmo per la generazione del DeviceId*.
 
 ```mermaid
 sequenceDiagram
@@ -1435,11 +1442,13 @@ sequenceDiagram
     end
 ```
 
-Figura 8 - Flusso di esecuzione di `OidSecurityIdentityAugmentor.augment()`.
+Figura 8 - Sequence Diagram del flusso di esecuzione di `OidSecurityIdentityAugmentor.augment()`.
 
-Nel nostro caso, abbiamo registrato più di una `SecurityIdentityAugmentor` personalizzata nell’applicazione Quarkus. Queste saranno considerate paritetiche e invocate in ordine casuale. Tuttavia, è possibile imporre un ordine implementando il metodo `SecurityIdentityAugmentor#priority`: gli Augmentor con priorità più alta verranno invocati per primi. 
+Nel nostro caso, abbiamo registrato più di una `SecurityIdentityAugmentor` personalizzata nell’applicazione Quarkus. Queste saranno considerate paritetiche e invocate in ordine casuale. Tuttavia, è possibile imporre un ordine implementando il metodo `SecurityIdentityAugmentor#priority`. Gli Augmentor con priorità più alta saranno invocati per primi. 
 
-Nella classe `OidSecurityIdentityAugmentor` abbiamo implementato questo metodo impostando la priorità al valore intero dieci, per garantire che il controllo sull’OID del DeviceId venga eseguito prima degli altri. In caso di errore, verrà lanciata un’eccezione `SecurityException` e l’autenticazione fallirà (vedi diagramma di sequenza di figura 8).
+Nella classe `OidSecurityIdentityAugmentor` abbiamo implementato il metodo di priorità impostando un valore intero pari a dieci, per garantire che il controllo sull’OID del DeviceId sia eseguito prima degli altri. In caso di errore, sarà lanciata un’eccezione `SecurityException` e l’autenticazione fallirà (vedi sequence diagram di figura 8).
+
+**Nota**: i `SecurityIdentityAugmentor` in Quarkus sono a livello globale, ma è possibile configurarli in modo condizionale o personalizzato in base a specifiche esigenze, anche se non esiste una configurazione diretta per attivarli basandosi esclusivamente sul nome di una configurazione TLS.
 
 ### Step 8 - Implementazione dei servizi REST
 
@@ -1452,7 +1461,7 @@ I servizi REST che andremo a realizzare troveranno spazio all'interno del packag
 La classe `ConnectionInfoResourceEndPoint` implementerà i seguenti metodi:
 
 1. `@GET /v1/connection-info/info`: metodo che restituirà le informazioni di connessione del client;
-2. `@GET /v1/connection-info/user-identy`: metodo che restituirà le informazioni circa l'identità del client che ha effettuato la richiesta.
+2. `@GET /v1/connection-info/user-identity`: metodo che restituirà le informazioni circa l'identità del client che ha effettuato la richiesta.
 
 Le risposte dei metodi saranno in formato JSON e conterranno le informazioni richieste e conformi agli schemi JSON definiti nel capitolo _Struttura JSON di risposta dei servizi Rest_.
 
@@ -1462,7 +1471,7 @@ Il sequence diagram mostra il flusso di esecuzione del metodo `ConnectionInfoRes
 2. **ConnectionInfoResourceEndPoint**: la classe che gestisce la richiesta del client e costruisce l'oggetto `connectionInfo`.
 3. **RoutingContext**: contesto di routing che fornisce informazioni sulla richiesta HTTP.
 4. **HttpServerRequest**: rappresenta la richiesta HTTP ricevuta dal server.
-5. **SSLSession**: rappresenta la sessione SSL, utilizzata per ottenere informazioni di sicurezza aggiuntive se la connessione è sicura.
+5. **SSLSession**: rappresenta la sessione TLS/SSL, utilizzata per ottenere informazioni di sicurezza aggiuntive se la connessione è sicura.
 
 Questi attori collaborano per ottenere e restituire le informazioni di connessione in risposta alla richiesta del client.
 
@@ -1504,7 +1513,7 @@ sequenceDiagram
    ConnectionInfoResourceEndPoint-->>Client: Response.ok(connectionInfo).build()
 ```
 
-Figura 9 - Flusso di esecuzione di `ConnectionInfoResourceEndPoint.info()`.
+Figura 9 - Sequence Diagram del flusso di esecuzione di `ConnectionInfoResourceEndPoint.info()`.
 
 Il sequence diagram mostra il flusso di esecuzione del metodo `ConnectionInfoResourceEndPoint.getUserIdentity()`. Gli attori coinvolti nel diagramma sono:
 
@@ -1545,15 +1554,15 @@ sequenceDiagram
    ConnectionInfoResourceEndPoint-->>Client: Response.ok(securityIdentityInfo).build()
 ```
 
-Figura 10 - Flusso di esecuzione di `ConnectionInfoResourceEndPoint.getUserIdentity()`.
+Figura 10 - Sequence Diagram del flusso di esecuzione di `ConnectionInfoResourceEndPoint.getUserIdentity()`.
 
 ### Step 9 - Configurazione delle policy di accesso ai servizi REST
 
 Il tag di riferimento per questo step è [tutorial-step-9-config-rest-services](https://github.com/amusarra/quarkus-mtls-auth-tutorial/blob/tutorial-step-9-config-policy/src/main/java/it/dontesta/quarkus/tls/auth/ws/resources/endpoint/v1/ConnectionInfoResourceEndPoint.java).
 
-Ora che abbiamo implementato i servizi REST, possiamo procedere con la configurazione delle policy di accesso. A tal fine, creeremo le policy di accesso ai servizi REST definite nel terzo requisito, descritto nella tabella 1 del capitolo _Requisiti dell’applicazione Quarkus_.
+Ora che abbiamo implementato i servizi REST, possiamo procedere con la configurazione delle policy di accesso. A tal fine, creeremo le policy di accesso ai servizi REST definite nel terzo requisito e descritto nella tabella 1 del capitolo _Requisiti dell’applicazione Quarkus_.
 
-Configurare le policy di accesso significa definire quali ruoli possono accedere ai servizi REST. Nel nostro caso, i ruoli sono due: `admin` e `user`. Questa configurazione può essere effettuata modificando il file `application.properties` e aggiungendo le proprietà indicate di seguito.
+Configurare le policy di accesso significa definire quali ruoli possono accedere ai servizi REST. Nel nostro caso, i ruoli sono due: `Administartor` e `User`. Questa configurazione può essere effettuata modificando il file `application.properties` aggiungendo le proprietà indicate di seguito.
 
 Tramite la configurazione abbiamo definito:
 
@@ -1592,7 +1601,7 @@ quarkus.http.auth.policy.role-policy-cert.roles-allowed=User,Administrator
 
 Application Properties 3 - Configurazione delle policy di accesso ai servizi REST
 
-A questo punto, abbiamo configurato le policy di accesso ai servizi REST, quindi possiamo procedere con il test dell’applicazione Quarkus per verificare che l’autenticazione mTLS funzioni correttamente e che le policy di accesso siano rispettate.
+Adesso che abbiamo configurato le policy di accesso ai servizi REST, potremo procedere con il test dell’applicazione Quarkus con lo scopo di verificare che l’autenticazione mTLS funzioni correttamente e che le policy di accesso siano rispettate.
 
 ### Step 10 - Generazione di un set di certificati client per eseguire dei test di accesso
 
@@ -1776,7 +1785,7 @@ La verifica del DeviceId è un passaggio obbligatorio per l’autenticazione mTL
 
 La verifica è implementata all'interno della classe `DeviceIdUtil` attraverso il metodo `verifyDeviceId` e l'algoritmo per la generazione del DeviceId è descritto nel capitolo _Algoritmo per la generazione del DeviceId_.
 
-Durante la fase di test, potrebbe risultare utile avere il log di debug dei componenti di SecurityAugmentor per verificare che l'autenticazione mTLS funzioni correttamente. Per fare ciò, possiamo aggiungere le seguenti proprietà al file di configurazione `application.properties`.
+Durante la fase di test, potrebbe risultare utile avere il log di debug dei componenti di `SecurityAugmentor` per verificare che l'autenticazione mTLS funzioni correttamente. Per fare ciò, possiamo aggiungere le seguenti proprietà al file di configurazione `application.properties`.
 
 ```properties
 # Logging configuration
@@ -1792,7 +1801,7 @@ Adesso possiamo procedere con il test dell'applicazione Quarkus. Per fare ciò, 
 1. avviare l'applicazione Quarkus;
 2. eseguire i test di accesso ai servizi REST utilizzando i certificati client generati verificando che l'autenticazione mTLS funzioni correttamente, che le policy di accesso ai servizi REST siano rispettate e che le risposte dei servizi REST siano conformi agli schemi JSON definiti nel capitolo _Struttura JSON di risposta dei servizi Rest_.
 
-Per avviare l'applicazione basta eseguire il comando `quarkus:dev` e se non ci sono errori, l'applicazione Quarkus sarà pronta per i test e dovreste vedere un output simile a quello riportato di seguito.
+Per avviare l'applicazione basta eseguire il comando `quarkus:dev` e se non ci sono errori, l'applicazione Quarkus sarà pronta per i test e dovremmo vedere un output simile a quello riportato di seguito.
 
 ```text
 
@@ -1821,9 +1830,9 @@ Press [e] to edit command line args (currently ''), [r] to resume testing, [o] T
 
 Console 18 - Avvio dell'applicazione Quarkus
 
-Avviata l'applicazione, possiamo prepare un set di richieste HTTP verso i due endpoint REST che abbiamo implementato. Per fare ciò, possiamo utilizzare un tool come `curl` o `Postman`. In questo esempio, utilizzeremo `curl` per inviare le richieste HTTP.
+Avviata l'applicazione, possiamo preparare un set di richieste HTTP verso i due endpoint REST che abbiamo implementato. Per fare ciò, possiamo utilizzare un tool come `curl` o `Postman`. In questo esempio, utilizzeremo `curl` per inviare le richieste HTTP.
 
-Tenendo davanti a noi la tabella 2 con i certificati client generati, possiamo procedere con i test di accesso ai servizi REST, verificando che l'output sia quello atteso. Ricordiamo che l'output dipenderà dal certificato client utilizzato per l'accesso ai servizi REST.
+Tenendo davanti a noi la tabella 2 con i certificati client generati (in formato PKCS#12), potremo procedere con i test di accesso ai servizi REST, verificando che l'output sia quello atteso. Ricordiamo che l'output dipenderà dal certificato client utilizzato per l'accesso ai servizi REST.
 
 ```shell
 # Execute the request to the /api/v1/connection-info/info endpoint using the client certificate without custom extensions
@@ -1855,7 +1864,7 @@ curl -s \
 
 Console 19 - Esecuzione del test di accesso ai servizi REST con il certificato client senza estensioni personalizzate
 
-L'output dei test di accesso ai servizi REST con il certificato client senza estensioni personalizzate mostra che l'autenticazione mTLS è fallita così come ci aspettavamo, in virtù del fatto che il certificato client non contiene l'estensione personalizzata `DeviceId` necessaria per l'autenticazione mTLS. In questo caso è intervenuta è la classe `OidSecurityIdentityAugmentor` che ha la priorità più alta rispetto alle altre e che ha lanciato un'eccezione `SecurityException` in quanto l'OID del DeviceId non è stato trovato.
+L'output dei test di accesso ai servizi REST con il certificato client senza estensioni personalizzate mostra che l'autenticazione mTLS è fallita così come ci aspettavamo, in virtù del fatto che il certificato client non contiene l'estensione personalizzata `DeviceId` necessaria per l'autenticazione mTLS. In questo caso è intervenuta è la classe `OidSecurityIdentityAugmentor` che ha la priorità più alta rispetto alle altre e che ha lanciato l'eccezione `SecurityException` perché l'OID del DeviceId non è stato trovato.
 
 Proseguiamo il test con il certificato client con l'estensione personalizzata `DeviceId` e il valore `1234567890`.
 
@@ -1889,7 +1898,7 @@ curl -s \
 
 Console 20 - Esecuzione del test di accesso ai servizi REST con il certificato client con estensione personalizzata `DeviceId` e valore `1234567890`
 
-Anche in questo caso l'esito del test è quello atteso, con la differenza che il messaggio di errore è leggermente diverso: l'OID del DeviceId è stato trovato ma il valore non è valido. In questo il blocco di codice che ha lanciato l'eccezione è quello che verifica il valore del DeviceId, cosi come mostrato a seguire (dalla classe `OidSecurityIdentityAugmentor`).
+Anche in questo caso l'esito del test è quello atteso, con la differenza che il messaggio di errore è leggermente diverso: `l'OID del DeviceId è stato trovato ma il valore non è valido`. In questo caso il blocco di codice che ha lanciato l'eccezione è quello che verifica il valore del DeviceId, cosi come mostrato a seguire (dalla classe `OidSecurityIdentityAugmentor`).
 
 ```java
       if (!DeviceIdUtil.verifyDeviceId(oidValue)) {
@@ -1901,7 +1910,7 @@ Anche in questo caso l'esito del test è quello atteso, con la differenza che il
 
 Source Code 6 - Blocco di codice che verifica il valore del DeviceId
 
-Continuiamo il test con il certificato client con l'estensione personalizzata `DeviceId` con il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `123User`.
+Continuiamo il test con il certificato client con l'estensione personalizzata `DeviceId` che ha il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `123User`.
 
 ```shell
 # Execute the request to the /api/v1/connection-info/info endpoint using the client certificate with custom extension DeviceId with the correct value generated by the algorithm and the custom extension Roles and the value 123User
@@ -1937,7 +1946,7 @@ Anche in questo caso l'esito del test è quello atteso, con la differenza che il
 
 ```java
         if (decodedRoles != null) {
-          log.debug("Decoded roles from certificate: " + decodedRoles);
+          log.debug("Decoded roles from certificate: %s".formatted(decodedRoles));
 
           // Verify that decodedRoles matches the expected pattern
           if (decodedRoles.matches("^Role=([A-Za-z]+(?:,[A-Za-z]+)*+)$")) {
@@ -1956,7 +1965,7 @@ Anche in questo caso l'esito del test è quello atteso, con la differenza che il
 
 Source Code 7 - Blocco di codice che verifica il pattern dei ruoli
 
-Sulla console di Quarkus dovreste vedere un output simile a quello riportato di seguito.
+Sulla console di Quarkus dovremmo vedere un output simile a quello riportato di seguito.
 
 ```text
 2024-09-13 17:07:57,107 DEBUG [it.don.qua.tls.aut.ws.sec.ide.RolesAugmentor] (vert.x-eventloop-thread-0) Augmenting SecurityIdentity with roles extracted from certificate with OID: 1.3.6.1.4.1.99999.1
@@ -1967,7 +1976,7 @@ Sulla console di Quarkus dovreste vedere un output simile a quello riportato di 
 
 Console 22 - Log di debug per la verifica del pattern dei ruoli
 
-Andiamo avanti con il test utilizzando il certificato client con l'estensione personalizzata `DeviceId` con il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `ProjectManager`.
+Andiamo avanti con il test utilizzando il certificato client con l'estensione personalizzata `DeviceId` che ha il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `ProjectManager`.
 
 ```shell
 # Execute the request to the /api/v1/connection-info/info endpoint using the client certificate with custom extension DeviceId with the correct value generated by the algorithm and the custom extension Roles and the value ProjectManager
@@ -1997,7 +2006,7 @@ Console 22 - Esecuzione del test di accesso ai servizi REST con il certificato c
 
 Anche in questo caso l'esito del test è quello atteso. L'accesso ai servizi REST è stato negato in quanto il ruolo `ProjectManager` non è presente tra i ruoli consentiti, infatti la policy di accesso che abbiamo definito sulla proprietà `quarkus.http.auth.policy.role-policy-cert.roles-allowed` prevede solo i ruoli `User` e `Administrator`.
 
-Infine, proseguiamo il test con il certificato client che possiede l'estensione personalizzata `DeviceId` con il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `User,Administrator`.
+Infine, proseguiamo il test con il certificato client che possiede l'estensione personalizzata `DeviceId` che ha il corretto valore generato dall'algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_ e l'estensione personalizzata `Roles` con il valore `User,Administrator`.
 
 ```shell
 # Execute the request to the /api/v1/connection-info/info endpoint using the client certificate with custom extension DeviceId with the correct value generated by the algorithm and the custom extension Roles and the value User,Administrator
@@ -2095,7 +2104,7 @@ Con questo ultimo test abbiamo completato la serie di verifiche dell’accesso a
 
 Il **TSL** (Trusted Service List) è un documento elettronico standardizzato che contiene informazioni sui **servizi fiduciari** di uno Stato membro dell’Unione Europea o di un altro paese riconosciuto. I servizi fiduciari includono quelli che offrono servizi di firma digitale, autenticazione, sigilli elettronici, certificati SSL/TLS e altri meccanismi di sicurezza legati all’identità digitale.
 
-Questa **mindmap** suddivide il TSL nei seguenti rami principali:
+La **mindmap** seguente suddivide il TSL nei seguenti rami principali.
 
 - **Definizione**: contiene la definizione del TSL e il documento elettronico standard che lo rappresenta.
 - **Componenti Principali**: elenca i principali componenti del TSL, come i fornitori di servizi fiduciari (TSP), i certificati digitali e i servizi fiduciari qualificati.
@@ -2132,21 +2141,23 @@ Gli Stati membri dell'Unione Europea e dello Spazio Economico Europeo pubblicano
 
 ### La soluzione dell'integrazione del TSL in Quarkus
 
-Per integrare il TSL in un'applicazione Quarkus, potremmo utilizzare la libreria **[DSS : Digital Signature Service](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Digital+Signature+Service+-++DSS)** che fornisce un'implementazione Java per la gestione delle Trusted Lists (TL) più decine di altre cose all'interno dell'ecosistema DSS. La libreria DSS è stata sviluppata dalla Commissione Europea e fa parte dei [Digital Building Blocks (DBB)](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/) per la creazione di servizi digitali sicuri e interoperabili. In questo esempio d'integrazione, faremo una nostra implementazione che richede davvero poco sforzo e sfrutteremo in questo modo delle caratteristiche di Quarkus.
+Il tag di riferimento per questo step è [tutorial-bonus-integrate-tsl](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-bonus-integrate-tsl).
 
-L'[applicazione Quarkus](https://github.com/amusarra/quarkus-mtls-auth-tutorial) fino a questo momento è stata configurata per l'autenticazione mTLS e l'accesso ai servizi REST è stato limitato in base ai ruoli definiti e attributi presenti nei certificati client. L'integrazione del TSL potrebbe essere utile per verificare i certificati digitali dei fornitori di servizi fiduciari qualificati e garantire la conformità normativa. 
+Per integrare il TSL in un'applicazione Quarkus, potremmo utilizzare la libreria **[DSS : Digital Signature Service](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Digital+Signature+Service+-++DSS)** che fornisce un'implementazione Java per la gestione delle Trusted Lists (TL) più decine di altre cose all'interno dell'ecosistema DSS. La libreria DSS è stata sviluppata dalla Commissione Europea e fa parte dei [Digital Building Blocks (DBB)](https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/) per la creazione di servizi digitali sicuri e interoperabili. In questo esempio d'integrazione, faremo una nostra implementazione che richiede davvero poco sforzo e sfrutteremo in questo modo delle caratteristiche di Quarkus.
 
-Restando nel territorio Italiano e volendo per fare un esempio pratico, potremmo utilizzare il TSL Italiano pubblicato dall'Agenzia per l'Italia Digitale (AgID) e integrarlo nell'applicazione Quarkus. L'AgID pubblica il TSL Italiano in un formato elettronico standardizzato che può essere consultato sulla [eIDAS Dashboard](https://eidas.ec.europa.eu/efda/tl-browser/#/screen/tl/IT).
+L'[applicazione Quarkus](https://github.com/amusarra/quarkus-mtls-auth-tutorial), fino a questo momento è stata configurata per l'autenticazione mTLS e l'accesso ai servizi REST è stato limitato in base ai ruoli definiti e attributi presenti nel certificato client. L'integrazione del TSL potrebbe essere utile per verificare i certificati digitali dei fornitori di servizi fiduciari qualificati e garantire la conformità normativa.
 
-Integrando il TSL Italiano sulla nostra applicazione Quarkus, potremo per consentire l'accesso ai servizi REST per i possessori di certificati digitali rilasciati da fornitori di servizi fiduciari qualificati presenti nel TSL Italiano. Qual è il primo certificato digitale che quasi tutti i cittadini Italiani posseggono? La **[Carta d'Identità Elettronica (CIE)](https://www.cartaidentita.interno.gov.it/)** rilasciata dal Ministero dell'Interno e prodotta dal Poligrafico e Zecca dello Stato, è un esempio di certificato digitale che potrebbe essere verificato tramite il TSL Italiano.
+Restando nel territorio Italiano e volendo fare un esempio pratico, potremmo utilizzare il TSL Italiano pubblicato dall'[Agenzia per l'Italia Digitale (AgID)](https://www.agid.gov.it/it) e integrarlo nell'applicazione Quarkus. L'AgID pubblica il TSL Italiano in un formato elettronico standardizzato che può essere consultato sulla [eIDAS Dashboard](https://eidas.ec.europa.eu/efda/tl-browser/#/screen/tl/IT).
+
+Integrando il TSL Italiano sulla nostra applicazione Quarkus, potremo consentire l'accesso ai servizi REST per i possessori di certificati digitali rilasciati da fornitori di servizi fiduciari qualificati. Qual è il primo certificato digitale che quasi tutti i cittadini Italiani posseggono? La **[Carta d'Identità Elettronica (CIE)](https://www.cartaidentita.interno.gov.it/)** rilasciata dal Ministero dell'Interno e prodotta dal Poligrafico e Zecca dello Stato, è un esempio di certificato digitale che può essere verificato tramite il TSL Italiano.
 
 Quali sono i macro passaggi per integrare il TSL Italiano nell'applicazione Quarkus?
 
-1. Scaricare il file XML del TSL Italiano da eIDAS (https://eidas.agid.gov.it/TL/TSL-IT.xml)
-2. Eseguire il parsing del file XML
-3. Estrazione dei certificati digitali dei fornitori di servizi fiduciari qualificati
-4. Verifica dei certificati digitali in ingresso
-5. Configurare il TLS in Quarkus con i certificati digitali validati
+1. Scaricare il file XML del TSL Italiano da eIDAS (<https://eidas.agid.gov.it/TL/TSL-IT.xml>).
+2. Eseguire il parsing del file XML.
+3. Estrarre i certificati X509 delle CA dei fornitori di servizi fiduciari qualificati.
+4. Verificare i certificati digitali in ingresso.
+5. Configurare il TLS in Quarkus con i certificati digitali validati.
 
 Questi macro passaggi possono essere implementati all'interno di un **[Periodic Task](https://quarkus.io/guides/scheduler)** di Quarkus che eseguirà gli step indicati in precedenza, così come mostrato nel diagramma di flusso a seguire.
 
@@ -2170,20 +2181,20 @@ Figura 12 - Diagramma di flusso per l'integrazione del TSL in Quarkus
 
 #### Implementazione del parser XML del TSL e del task periodico di aggiornamento
 
-Per quanto riguarda il parser XML del TSL, andremo a scrivere un componente che chiameremo GovCertificateParser che avrà le seguenti responsabilità:
+Per quanto riguarda il parser XML del TSL, andremo a scrivere un componente che chiameremo `GovCertificateParser` che avrà le seguenti responsabilità:
 
-1. eseguire il parser del file XML estraendo solo i certificati X509 che sono identificati dall'elemento ServiceTypeIdentifier con il valore `http://uri.etsi.org/TrstSvc/Svctype/IdV`;
+1. eseguire il parser del file XML estraendo solo i certificati X509 che sono identificati dall'elemento `ServiceTypeIdentifier` con il valore `http://uri.etsi.org/TrstSvc/Svctype/IdV`;
 2. verificare che i certificati X509 siano validi;
 3. salvare i certificati X509 validi in formato PEM;
 4. creare un bundle di certificati PEM che sarà poi utilizzato per configurare il TLS in Quarkus.
 
-Per quanto riguarda il task periodico di aggiornamento, andremo a scrivere un componente che chiameremo GovCertificateUpdater che avrà le seguenti responsabilità:
+Per quanto riguarda il task periodico di aggiornamento, andremo a scrivere un componente che chiameremo `GovCertificateUpdater` che avrà le seguenti responsabilità:
 
-1. eseguire il task periodico di aggiornamento del TSL con una frequenza che sia configurabile;
+1. eseguire il task periodico di aggiornamento del TSL con una frequenza che sia configurabile attraverso una proprietà applicativa sul file `application.properties`;
 2. scaricare il file XML del TSL Italiano;
-3. chiamare il componente GovCertificateParser per il parsing del file XML e salvare i certificati X509 all'interno di un bundle di certificati PEM;
+3. chiamare il componente `GovCertificateParser` che esegue il parsing del file XML e salva i certificati X509 all'interno di un bundle di certificati PEM;
 
-Qui non riporterò il codice sorgente completo, che potete sempre visionare qui [tutorial-step-12-tsl-integration]() ma vi mostrerò il digramma di sequenza per l'aggiornamento del TSL in Quarkus che mostra come i componenti `Scheduler` (di Quarkus), `GovCertificateUpdater`, `HttpClient` (di java.net.http) e `GovCertificateParser` interagiscono tra loro.
+Qui non riporterò il codice sorgente completo, che potete sempre visionare qui [tutorial-bonus-integrate-tsl](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-bonus-integrate-tsl) ma vi mostrerò il codice sorgente del componente [GovCertificateUpdater](https://github.com/amusarra/quarkus-mtls-auth-tutorial/blob/tutorial-bonus-integrate-tsl/src/main/java/it/dontesta/quarkus/tls/auth/certificate/etsi/gov/GovCertificateUpdater.java) che si occupa di scaricare il file XML del TSL Italiano e di chiamare il componente [GovCertificateParser](https://github.com/amusarra/quarkus-mtls-auth-tutorial/blob/tutorial-bonus-integrate-tsl/src/main/java/it/dontesta/quarkus/tls/auth/certificate/etsi/gov/GovCertificateParser.java) per eseguire il parsing del file XML e salvare i certificati X509 all'interno di un bundle di certificati PEM.
 
 ```mermaid
 sequenceDiagram
@@ -2232,9 +2243,9 @@ gov.trust.certs.tsl.update.initial.delay=60s
 
 Application Properties 6 - Configurazioni applicative per l'integrazione del TSL
 
-Oltre a introdurre queste nuove configurazioni applicative, affinché il TLS Registry di Quarkus sia in grado di caricare sul truststore i certificati estratti dal TSL Italiano, dobbiamo configurare il truststore di Quarkus con il bundle di certificati PEM e abilitare il meccanismo di refresh dei certificati. Per fare ciò, dobbiamo modificare la proprietà `quarkus.tls.https.trust-store.pem.certs` e aggiungere la `quarkus.tls.https.reload-period`. A seguire le modifiche apportate al file `application.properties`.
+Oltre a introdurre queste nuove configurazioni applicative, affinché il TLS Registry di Quarkus sia in grado di caricare sul truststore i certificati estratti dal TSL Italiano, dobbiamo configurare il truststore di Quarkus con il bundle di certificati PEM e abilitare il meccanismo di refresh dei certificati. Per fare ciò, dobbiamo modificare la proprietà `quarkus.tls.https.trust-store.pem.certs` per aggiungere anche il bundle PEM delle CA del TSL e aggiungere la proprietà `quarkus.tls.https.reload-period`. A seguire le modifiche apportate al file `application.properties`.
 
-```properties 
+```properties
 # Setting the trust-store path.
 # The trust-store file is located in the `certs` directory
 # inside the resources directory.
@@ -2246,9 +2257,9 @@ quarkus.tls.https.reload-period=125s
 
 Application Properties 7 - Configurazioni del TLS Registry per l'integrazione del TSL
 
-L'attuale implementazione del TLS Registry di Quarkus, prevede che il caricamento iniziale dei certificati e successivo reload, possa avvenire solo attraverso filesystem, questo implica che il file `tsl-it_bundle.pem` (vedi configurazione) debba essere presente sul filesystem e valido, per esempio non può essere un file vuoto. Se queste condizioni non sono rispettate, il TLS Registry di Quarkus non sarà in grado di caricare i certificati e il server non verrà avviato. Per maggiori informazioni consultare la documentazione ufficiale [6. Startup checks](https://quarkus.io/guides/tls-registry-reference#startup-checks).
+L'attuale implementazione del TLS Registry di Quarkus, prevede che il caricamento iniziale dei certificati e successivo reload, possa avvenire solo attraverso filesystem, questo implica che il file `tsl-it_bundle.pem` (vedi configurazione) debba essere presente sul filesystem e valido; per esempio non può essere un file vuoto. Se queste condizioni non sono rispettate, il TLS Registry di Quarkus non sarà capace di caricare i certificati e il server non verrà avviato. Per maggiori informazioni consultare la documentazione ufficiale [6. Startup checks](https://quarkus.io/guides/tls-registry-reference#startup-checks).
 
-**Come risolvere questo problema?** Per gli ambienti superiori a sviluppo non è un problema perché in genere sono adottate soluzioni basate su k8s o cert-manager (vedi [8. Using Kubernetes secrets or cert-manager](https://quarkus.io/guides/tls-registry-reference#using-kubernetes-secrets-or-cert-manager)) che inietteranno i certificati direttamente nel filesystem locale del pod, questo garantirà che il bundle PEM sia presente e valido. Quanto mostrato in console è un esempio di quando l'applicazione Quarkus non riesce ad avviarsi a causa di un file PEM non valido.
+**Come risolvere questo problema?** Per gli ambienti superiori a sviluppo non è un problema perché in genere sono adottate soluzioni basate sulle [kubernetes secrets](https://kubernetes.io/docs/concepts/configuration/secret/) o [cert-manager](https://cert-manager.io/) (vedi [8. Using Kubernetes secrets or cert-manager](https://quarkus.io/guides/tls-registry-reference#using-kubernetes-secrets-or-cert-manager)) che inietteranno i certificati direttamente nel filesystem locale del pod, e questo garantirà che il bundle PEM sia presente e valido. Quanto mostrato in console è un esempio di quando l'applicazione Quarkus non riesce ad avviarsi a causa di un file PEM non valido.
 
 ```text
 2024-09-17 17:30:20,018 ERROR [io.qua.run.Application] (Quarkus Main Thread) Failed to start application: java.lang.RuntimeException: Failed to start quarkus
@@ -2269,16 +2280,18 @@ Caused by: java.lang.IllegalStateException: Invalid PEM trusted certificates con
 
 Console 24 - Errore di avvio dell'applicazione Quarkus a causa di un file PEM non valido
 
-Per riuscire a fare partire l'applicazione Quarkus sul nostro ambiente di sviluppo, le strade sono due:
+Per riuscire a far partire l'applicazione Quarkus sul nostro ambiente di sviluppo, le strade sono due:
 
 1. creare un file PEM (`tsl-it_bundle.pem`) con almeno un certificato valido all'interno della directory `/tmp/tsl-it` prima di avviare l'applicazione Quarkus;
 2. creare il file `tsl-it_bundle.pem` contenente i certificati validi estratti dal TSL Italiano all'interno della directory `/tmp/tsl-it` prima di avviare l'applicazione Quarkus.
 
-Indubbiamente la prima strada è la più semplice e veloce da percorrere, mentre la seconda richiede un po' più di lavoro. Seguendo la prima strada dovremmo attendere che sia eseguito il task che esegue l'aggiornamento del TSL per ottenere il bundle PEM con i certificati validi e poi attendere il reload del TLS Registry di Quarkus (vedi `quarkus.tls.https.reload-period`). Il vantaggio della seconda strada è che all'avvio dell'applicazione Quarkus avremo già il bundle PEM con i certificati validi estratti dal TSL Italiano e il TLS sarà configurato correttamente.
+Indubbiamente la prima strada è la più semplice e veloce da percorrere, mentre la seconda richiede più di lavoro.
+
+Seguendo la prima strada dovremmo attendere l'esecuzione del task finché porti a compimento l'aggiornamento del TSL per ottenere il bundle PEM con i certificati validi, per poi attendere il reload del TLS Registry di Quarkus (vedi `quarkus.tls.https.reload-period`). Il vantaggio della seconda strada è che all'avvio dell'applicazione Quarkus avremo già il bundle PEM con i certificati validi estratti dal TSL Italiano e il TLS sarà configurato correttamente.
 
 In ogni caso, una volta che l'applicazione Quarkus sarà partita, il task periodico di aggiornamento del TSL si occuperà di aggiornare il file PEM con i certificati validi estratti dal TSL Italiano. Direi di seguire entrambe le strade e verificare così la differenza di comportamento.
 
-La prima strada prevede di creare un file PEM con almeno un certificato di CA. Nel nostro caso lo possiamo generare eseguendo dalla home del progetto lo script shell `./src/main/shell/certs-manager/download_tsl_it_certs.sh --fake`. Questo comando genererà un file PEM con un certificato di CA fake. A seguire l'output dello script shell.
+La prima strada prevede di creare un file PEM con almeno un certificato di CA. Eseguendo dalla home del progetto lo script shell `./src/main/shell/certs-manager/download_tsl_it_certs.sh --fake`, genereremo un file PEM con un certificato di CA fake. A seguire l'output dello script shell.
 
 ```shell
 🚀 Starting certificate update process
@@ -2291,7 +2304,7 @@ La prima strada prevede di creare un file PEM con almeno un certificato di CA. N
 
 Console 25 - Esecuzione dello script shell per la generazione di un file PEM con un certificato di CA fake
 
-Una volta ottenuto il file `/tmp/tsl-it/fake_ca.pem` lo rinominiamo in `tsl-it_bundle.pem` e avviamo l'applicazione Quarkus con il comando `quarkus dev`. L'applicazione Quarkus dovrebbe partire senza problemi ed eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovreste vedere nella lista degli **Acceptable client certificate CA names** il certificato di CA fake che abbiamo generato, così come mostrato di seguito.
+Una volta ottenuto il file `/tmp/tsl-it/fake_ca.pem` lo rinominiamo in `tsl-it_bundle.pem` e avviamo l'applicazione Quarkus con il comando `quarkus dev`. L'applicazione Quarkus dovrebbe partire senza problemi, ed eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovremmo vedere nella lista degli **Acceptable client certificate CA names** il certificato di CA fake (con subject `C=US, ST=California, L=San Francisco, O=Fake Identity Corp, OU=IT Department, CN=Faked Identity Corp Root CA`) che abbiamo generato, così come mostrato di seguito da un estratto dell'output del comando.
 
 ```text
 Connecting to 127.0.0.1
@@ -2328,7 +2341,7 @@ Server Temp Key: X25519, 253 bits
 
 Console 26 - Output del comando `openssl s_client -connect localhost:8443 -showcerts`
 
-Dopo circa sessanta secondi dalla partenza di Quarkus (vedi `gov.trust.certs.tsl.update.initial.delay`), dovreste vedere sui log dell'applicazione Quarkus che il task periodico di aggiornamento del TSL è stato eseguito con successo e il file `tsl-it_bundle.pem` è stato aggiornato con i certificati validi estratti dal TSL Italiano. A seguire un esempio di output dei log dell'applicazione Quarkus.
+Dopo circa sessanta secondi dalla partenza di Quarkus (vedi proprietà applicativa `gov.trust.certs.tsl.update.initial.delay`), dovreste vedere sui log dell'applicazione Quarkus che il task periodico di aggiornamento del TSL è stato eseguito con successo e il file `tsl-it_bundle.pem` aggiornato con i certificati validi estratti dal TSL. A seguire un estratto di output dei log dell'applicazione Quarkus.
 
 ```text
 2024-09-17 18:39:46,008 INFO  [it.don.qua.tls.aut.ws.cer.ets.gov.GovCertificateParser] (vert.x-worker-thread-1) Gov Trust Certificates will be saved to: /var/folders/cn/bdz5khhx1_7gn5ns89sbywtm0000gn/T/gov-trust-certs6116014320910948875
@@ -2339,7 +2352,9 @@ Dopo circa sessanta secondi dalla partenza di Quarkus (vedi `gov.trust.certs.tsl
 
 Log 1 - Output dei log dell'applicazione Quarkus dopo l'aggiornamento del TSL
 
-Dopo centoventicinque secondi dall'avvio dell'applicazione Quarkus, il TLS Registry di Quarkus dovrebbe essere ricaricato (vedi `quarkus.tls.https.reload-period`) con i certificati validi estratti dal TSL Italiano. Eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovreste vedere nella lista degli **Acceptable client certificate CA names** i certificati validi estratti dal TSL Italiano, così come mostrato di seguito.
+Dopo centoventicinque secondi dall'avvio dell'applicazione Quarkus, il TLS Registry di Quarkus dovrebbe essere ricaricato (vedi configurazione `quarkus.tls.https.reload-period`) con i certificati validi estratti dal TSL. Sul log di Quarkus, l'aggiornamento periodico è evidente dalla voce `The TLS configuration https used by the HTTP server http server has been updated`.
+
+Eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovreste vedere nella lista degli **Acceptable client certificate CA names** i certificati validi estratti dal TSL Italiano, così come mostrato di seguito.
 
 ```text
 Connecting to 127.0.0.1
@@ -2378,9 +2393,9 @@ C=IT, L=Ponte San Pietro, O=ArubaPEC S.p.A., organizationIdentifier=VATIT-018790
 
 Console 27 - Output del comando `openssl s_client -connect localhost:8443 -showcerts`
 
-Seguendo la prima strada del certificato di CA fake abbiamo avuto modo di vedere come la nostra implementazione dell'integrazione del TSL e la configurazione del TLS Registry di Quarkus funzionino correttamente e come atteso. Ora possiamo passare alla seconda strada, ovvero quella di creare il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL Italiano prima di avviare l'applicazione Quarkus.
+Seguendo la prima strada del certificato di CA fake, abbiamo avuto modo di appurare come la nostra implementazione dell'integrazione del TSL e la configurazione del TLS Registry di Quarkus funzionino correttamente e come atteso. Ora possiamo passare alla seconda strada, ovvero, quella di creare il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL prima di avviare l'applicazione Quarkus.
 
-Per generare quindi il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL Italiano, possiamo eseguire lo script shell `./src/main/shell/certs-manager/download_tsl_it_certs.sh` che si occuperà di scaricare il file XML del TSL Italiano, estrarre i certificati validi e salvarli in formato PEM all'interno della directory `/tmp/tsl-it`. Prima di eseguire lo script, dovreste eseguire lo stop dell'applicazione Quarkus. A seguire un esempio di esecuzione dello script shell.
+Per generare quindi il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL, eseguiremo lo script shell `./src/main/shell/certs-manager/download_tsl_it_certs.sh` che si occuperà di scaricare il file XML del TSL, estrarre i certificati validi e salvarli in formato PEM (bundle) all'interno della directory `/tmp/tsl-it`. Prima di eseguire lo script, dovreste accertare che l'applicazione Quarkus non sia attiva. A seguire un estratto di esecuzione dello script shell.
 
 ```shell
 🚀 Starting certificate update process
@@ -2413,7 +2428,7 @@ Certificate will expire
 
 Console 25 - Esecuzione dello script shell per l'aggiornamento del file `tsl-it_bundle.pem`
 
-Ottimo! Abbiamo generato il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL Italiano. Ora possiamo avviare l'applicazione Quarkus con il comando `quarkus dev` e verificare che il TLS Registry di Quarkus sia stato ricaricato con i certificati validi estratti dal TSL Italiano. Eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovreste vedere nella lista degli **Acceptable client certificate CA names** i certificati validi estratti dal TSL Italiano, così come atteso.
+Ottimo! Abbiamo generato il file `tsl-it_bundle.pem` con i certificati validi estratti dal TSL. Ora possiamo avviare l'applicazione Quarkus con il comando `quarkus dev` e verificare che il TLS Registry di Quarkus sia stato ricaricato con i certificati validi estratti dal TSL. Eseguendo il comando `openssl s_client -connect localhost:8443 -showcerts`, dovreste vedere nella lista degli **Acceptable client certificate CA names** i certificati validi estratti dal TSL, così come atteso.
 
 Adesso la nostra applicazione Quarkus è potenzialmente pronta per accettare client che si vogliano per esempio autenticare tramite CIE o CNS. Potenzialmente, perché l'attuale implementazione andrebbe estesa per garantire l'accesso ai servizi REST ma questo è un esercizio che lascio a voi.
 
@@ -2425,4 +2440,4 @@ Un elemento fondamentale per la corretta gestione dei certificati e della fiduci
 
 Quarkus, con la sua capacità di integrarsi facilmente con mTLS e la gestione di certificati validati tramite TSL, fornisce una piattaforma sicura e scalabile per applicazioni cloud-native. Questo approccio consente di proteggere le comunicazioni, stabilire fiducia reciproca tra client e server e mantenere elevati livelli di sicurezza per le applicazioni distribuite.
 
-In conclusione, l’integrazione di TLS, mTLS e TSL rappresenta una soluzione completa per chi desidera implementare elevati standard di sicurezza nelle proprie applicazioni. Con Quarkus, è possibile raggiungere questi obiettivi in maniera efficiente, bilanciando prestazioni e sicurezza.
+In conclusione, l’integrazione di TLS, mTLS e TSL rappresenta una soluzione completa per chi desidera implementare elevati standard di sicurezza nelle proprie applicazioni. Con Quarkus, con una manciata di configurazioni e poche righe di codice, è possibile raggiungere questi obiettivi in maniera efficiente, bilanciando prestazioni e sicurezza.
