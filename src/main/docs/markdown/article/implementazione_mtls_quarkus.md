@@ -120,7 +120,7 @@ Dopo aver estratto i certificati dai rispettivi "cassetti" (truststore o keystor
 
 Volendo fare un riassunto, ecco un elenco dei principali componenti coinvolti nella gestione dei certificati e nella verifica durante l'handshake TLS/mTLS.
 
-- **Truststore**: contiene i certificati delle CA radice fidate e viene usato per verificare i certificati ricevuti da client o server. 
+- **Truststore**: contiene i certificati delle CA radice fidate e viene usato per verificare i certificati ricevuti da client o server.
 - **Keystore**: contiene il certificato dell'entità (client o server) e la relativa chiave privata. Viene usato per l'autenticazione.
 - **CRL/OCSP**: utilizzati per controllare la revoca dei certificati.
 
@@ -262,7 +262,7 @@ La figura 3 mostra l'architettura di sicurezza di Quarkus, dove ho volutamente e
 
 Figura 3 - Quarkus Security Architecture e flow del processo di autenticazione e autorizzazione (fonte Quarkus.io)
 
-Tra l'elenco delle risorse ho menzionato il **TLS Registry** che utilizzeremo per portare a termine con successo l'implementazione della soluzione. 
+Tra l'elenco delle risorse ho menzionato il **TLS Registry** che utilizzeremo per portare a termine con successo l'implementazione della soluzione.
 
 **Cos’è il TLS Registry di Quarkus?** È un'estensione di Quarkus che centralizza la configurazione TLS per l'applicazione. Consente di definire la configurazione TLS in un unico luogo e di farvi riferimento da più punti nell'applicazione. Nel corso dell'articolo vedremo come ci verrà incontro.
 
@@ -273,10 +273,10 @@ Siamo certi del fatto che dobbiamo implementare la nostra applicazione per il su
 | ID      | Requisito                                           | Descrizione                                                  |
 | ------- | --------------------------------------------------- | ------------------------------------------------------------ |
 | 1       | Autenticazione mTLS                                 | È richiesto che l'applicazione supporti mTLS come meccanismo di autenticazione utilizzando certificati in formato PEM e PKCS#12. |
-| 2       | Private end-point REST                              | È richiesto la realizzazione di due end-point REST il cui accesso deve essere garantito solo ai client che si presentino con un certificato client avente determinate carratteristiche (vedi capitolo *Generazione dei certificati*).<br /><br />Il primo end-point deve essere definito con la URI `/v1/connection-info/info` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano la connessione instaurata.<br /><br />Il secondo end-point deve essere definito con la URI  `/v1/connection-info/user-identity` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo *Struttura JSON di risposta dei servizi REST*. La risposta del servizio conterrà un set d'informazioni che riguardano l'indentità del client che ha richiesto l'accesso alla risorsa. |
-| 3       | Mapping automatico dei ruoli                        | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sui **ruoli** gestisti da Quarkus (vedi [Authorization of web endpoints](https://quarkus.io/guides/security-authorize-web-endpoints-reference)). Per i dettagli sulla struttura del certificato client fare riferimento al capitolo *Generazione dei certificati*. |
-| 4       | Mapping automatico degli attributi d'identità       | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sugli **Identity Attributes** del client che ha richiesto l'accesso alla risorsa. Per i dettagli sulla struttura del certificato client fare riferimento al capitolo *Generazione dei certificati*. |
-| 5       | Definizione delle policy di accesso ai servizi Rest | È richiesto che l'applicazione definisca una policy chiamata per esempio `role-policy-cert` che definisca i ruoli *User* e *Administrator* come abilitati per l'accesso alle due risorse REST descritte sul requisito numero 1. |
+| 2       | Private end-point REST                              | È richiesto la realizzazione di due end-point REST il cui accesso deve essere garantito solo ai client che si presentino con un certificato client avente determinate carratteristiche (vedi capitolo _Generazione dei certificati_).<br /><br />Il primo end-point deve essere definito con la URI `/v1/connection-info/info` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo _Struttura JSON di risposta dei servizi REST_. La risposta del servizio conterrà un set d'informazioni che riguardano la connessione instaurata.<br /><br />Il secondo end-point deve essere definito con la URI  `/v1/connection-info/user-identity` con metodo `GET` e produrre un JSON avente la struttura mostrata al capitolo _Struttura JSON di risposta dei servizi REST_. La risposta del servizio conterrà un set d'informazioni che riguardano l'indentità del client che ha richiesto l'accesso alla risorsa. |
+| 3       | Mapping automatico dei ruoli                        | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sui **ruoli** gestisti da Quarkus (vedi [Authorization of web endpoints](https://quarkus.io/guides/security-authorize-web-endpoints-reference)). Per i dettagli sulla struttura del certificato client fare riferimento al capitolo _Generazione dei certificati_. |
+| 4       | Mapping automatico degli attributi d'identità       | È richiesto che l'applicazione sia capace di mappare attributi specifici del certificato client sugli **Identity Attributes** del client che ha richiesto l'accesso alla risorsa. Per i dettagli sulla struttura del certificato client fare riferimento al capitolo _Generazione dei certificati_. |
+| 5       | Definizione delle policy di accesso ai servizi Rest | È richiesto che l'applicazione definisca una policy chiamata per esempio `role-policy-cert` che definisca i ruoli _User_ e _Administrator_ come abilitati per l'accesso alle due risorse REST descritte sul requisito numero 1. |
 | 6_BONUS | Integrazione Trusted Service List (TSL)             | È richiesto che l'applicazione sia integrata con il **Trusted Service List (TSL)** Italiano per l'acquisizione delle Certification Authority dei fornitori di servizi fiduciari qualificati  e accreditati per il rilascio di certificati digitali. Questa è una predisposizione per consetire poi l'accesso all'applicazione in mTLS tramite per esempio CIE e CNS. |
 
 Tabella 1 - Requisiti che l'applicazione Quarkus deve implementare.
@@ -509,7 +509,7 @@ A seguire lo schema del JSON di risposta per il servizio `/api/v1/connection-inf
 }
 ```
 
-Source Code 2 - Schema del JSON di risposta per il servizio `/api/v1/connection-info/user-identity` 
+Source Code 2 - Schema del JSON di risposta per il servizio `/api/v1/connection-info/user-identity`
 
 ```json
 {
@@ -840,7 +840,7 @@ Adesso che abbiamo raccolto tutti i pezzi, possiamo finalmente mettere le mani a
 10. Generazione di un set di certificati client per eseguire dei test di accesso (positivi e negativi).
 11. Test della configurazione mTLS.
 
-Durante l'esecuzione degli step faremo riferimento al repository GitHub [quarkus-mtls-auth-tutorial](https://github.com/amusarra/quarkus-mtls-auth-tutorial) attraverso l'uso di tag per identificare gli step, per cui basta effettuare il clone in questo modo: `git clone -b <nome-tag> https://github.com/amusarra/quarkus-mtls-auth-tutorial.git`. 
+Durante l'esecuzione degli step faremo riferimento al repository GitHub [quarkus-mtls-auth-tutorial](https://github.com/amusarra/quarkus-mtls-auth-tutorial) attraverso l'uso di tag per identificare gli step, per cui basta effettuare il clone in questo modo: `git clone -b <nome-tag> https://github.com/amusarra/quarkus-mtls-auth-tutorial.git`.
 
 Tra il repository dedicato al tutorial e quello contenente il progetto completo della soluzione (disponibile sul repository GitHub [Quarkus mTLS Auth](https://github.com/amusarra/quarkus-mtls-auth)), potreste notare delle differenze come per esempio la presenza degli unit-test ma i livello di funzionalità sono gli stessi.
 
@@ -903,7 +903,7 @@ Il tag di riferimento per questo step è [tutorial-step-2-generate-ca](https://g
 
 Per generare il certificato della **Certification Authority** secondo quanto indicato in tabella 2, procederemo utilizzando lo script `certs_manager.sh`. Questo script è stato creato appositamente per questo tutorial e si trova all'interno del progetto Quarkus.
 
-Per eseguire lo script sulla propria macchina di sviluppo, è necessario che i requisiti software per *Gestione certificati TLS* (vedi capitolo *Requisiti software*) siano soddisfatti.
+Per eseguire lo script sulla propria macchina di sviluppo, è necessario che i requisiti software per _Gestione certificati TLS_ (vedi capitolo _Requisiti software_) siano soddisfatti.
 
 Per generare il certificato della CA dobbiamo eseguire il comando a seguire dalla home del progetto. L'esecuzione del comando indicato (che si trova in `src/main/shell/certs-manager/certs_manager.sh`), creerà all'interno della directory `src/main/resources/certs` i seguenti file:
 
@@ -1066,7 +1066,7 @@ Adesso che abbiamo configurato l'applicazione Quarkus per l'attivazione del prot
 
 ### Step 5 - Test della configurazione HTTPS/TLS
 
-Per testare la configurazione HTTPS/TLS, possiamo eseguire il comando `quarkus:dev` e verificare che l'applicazione Quarkus sia in esecuzione e che accetti solo richieste HTTPS. 
+Per testare la configurazione HTTPS/TLS, possiamo eseguire il comando `quarkus:dev` e verificare che l'applicazione Quarkus sia in esecuzione e che accetti solo richieste HTTPS.
 
 Dall'output del comando `quarkus:dev`, dovremmo notare che l'applicazione Quarkus è in esecuzione e accetti solo richieste HTTPS sulla porta 8443. L'output del comando `quarkus:dev` dovrebbe essere simile a quello mostrato a seguire.
 
@@ -1445,7 +1445,7 @@ sequenceDiagram
 
 Figura 8 - Sequence Diagram del flusso di esecuzione di `OidSecurityIdentityAugmentor.augment()`.
 
-Nel nostro caso, abbiamo registrato più di una `SecurityIdentityAugmentor` personalizzata nell’applicazione Quarkus. Queste saranno considerate paritetiche e invocate in ordine casuale. Tuttavia, è possibile imporre un ordine implementando il metodo `SecurityIdentityAugmentor#priority`. Gli Augmentor con priorità più alta saranno invocati per primi. 
+Nel nostro caso, abbiamo registrato più di una `SecurityIdentityAugmentor` personalizzata nell’applicazione Quarkus. Queste saranno considerate paritetiche e invocate in ordine casuale. Tuttavia, è possibile imporre un ordine implementando il metodo `SecurityIdentityAugmentor#priority`. Gli Augmentor con priorità più alta saranno invocati per primi.
 
 Nella classe `OidSecurityIdentityAugmentor` abbiamo implementato il metodo di priorità impostando un valore intero pari a dieci, per garantire che il controllo sull’OID del DeviceId sia eseguito prima degli altri. In caso di errore, sarà lanciata un’eccezione `SecurityException` e l’autenticazione fallirà (vedi sequence diagram di figura 8).
 
