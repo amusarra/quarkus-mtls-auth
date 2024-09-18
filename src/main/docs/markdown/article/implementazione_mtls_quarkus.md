@@ -19,7 +19,7 @@ La sicurezza delle applicazioni web è sempre più critica, soprattutto in conte
 
 ## Cos’è l’autenticazione reciproca TLS (mTLS)?
 
-L’autenticazione reciproca TLS (o mutual TLS o mTLS) è un’estensione del protocollo [TLS](https://it.wikipedia.org/wiki/Transport_Layer_Security) standard. Solitamente TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. __Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche__.
+L’autenticazione reciproca TLS (o mutual TLS o mTLS) è un’estensione del protocollo [TLS](https://it.wikipedia.org/wiki/Transport_Layer_Security) standard. Solitamente TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. __Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche**.
 
 Questa autenticazione bidirezionale è particolarmente utile in applicazioni distribuite, microservizi o API, dove sia il client che il server devono fidarsi reciprocamente prima di scambiare dati sensibili.
 
@@ -525,7 +525,7 @@ Source Code 2 - Schema del JSON di risposta per il servizio `/api/v1/connection-
 }
 ```
 
-Source Code 3 - Esempio di risposta JSON del servizio `/api/v1/connection-info/user-identity` 
+Source Code 3 - Esempio di risposta JSON del servizio `/api/v1/connection-info/user-identity`
 
 A seguire lo schema del JSON di risposta per il servizio `/api/v1/connection-info/info` e un esempio dell'istanza.
 
@@ -733,7 +733,7 @@ A seguire lo schema del JSON di risposta per il servizio `/api/v1/connection-inf
 }
 ```
 
-Source Code 4 - Schema del JSON di risposta per il servizio `/api/v1/connection-info/info` 
+Source Code 4 - Schema del JSON di risposta per il servizio `/api/v1/connection-info/info`
 
 ```json
 {
@@ -793,7 +793,7 @@ Source Code 4 - Schema del JSON di risposta per il servizio `/api/v1/connection-
 }
 ```
 
-Source Code 5 - Esempio di risposta JSON del servizio `/api/v1/connection-info/info` 
+Source Code 5 - Esempio di risposta JSON del servizio `/api/v1/connection-info/info`
 
 ## Requisiti software
 
@@ -822,11 +822,11 @@ Per quanto riguarda i tool indicati per la gestione dei certificati TLS, non son
 
 La gestione dei certificati TLS è in genere demandata a organi specifici all'interno di un'organizzazione ma noi sviluppatori dobbiamo essere "smart" ed essere capaci di gestire i certificati TLS per il nostro ambiente di sviluppo. Quarkus, in tal senso ha aggiunto dei tool [Quarkus CLI commands and development CA (Certificate Authority)](https://quarkus.io/guides/tls-registry-reference#quarkus-cli-commands-and-development-ca-certificate-authority) e [Automatic certificate management with Let’s Encrypt](https://quarkus.io/guides/tls-registry-reference#lets-encrypt) per la gestione dei certificati TLS che però hanno qualche limite in termini di flessibilità, per questo motivo ho deciso di realizzare un tool ad hoc che vedremo poi nel corso di questo articolo.
 
-Soddisfati i requisiti software, siamo nelle condizioni di poter iniziare a creare il nostro progetto software step by step e che rispetti i requisiti descritti al capitolo *Requisiti dell'applicazione Quarkus*.
+Soddisfati i requisiti software, siamo nelle condizioni di poter iniziare a creare il nostro progetto software step by step e che rispetti i requisiti descritti al capitolo _Requisiti dell'applicazione Quarkus_.
 
 ## Implementazione della soluzione
 
-Adesso che abbiamo raccolto tutti i pezzi, possiamo finalmente mettere le mani al codice realizzando l'applicazione Quarkus e che soddisfi i requisiti descritti al capitolo *Requisiti dell'applicazione Quarkus*. Gli step da seguire per implemetare i requisiti dall'uno al cinque sono indicati a seguire. Per quanto riguarda il requisito bonus, lo affronteremo a parte.
+Adesso che abbiamo raccolto tutti i pezzi, possiamo finalmente mettere le mani al codice realizzando l'applicazione Quarkus e che soddisfi i requisiti descritti al capitolo _Requisiti dell'applicazione Quarkus_. Gli step da seguire per implemetare i requisiti dall'uno al cinque sono indicati a seguire. Per quanto riguarda il requisito bonus, lo affronteremo a parte.
 
 1. Creazione dell'applicazione Quarkus tramite CLI specificando le estensioni necessarie.
 2. Generazione del certificato di Certification Authority.
@@ -984,7 +984,7 @@ Per generare il certificato server firmato dalla CA appena creata, utilizzeremo 
 
 Console 5 - Generazione del certificato server firmato dalla CA
 
-L'esecuzione del comando precedente, dovrebbe produrre un output simile a quello mostrato a seguire. Ricordate di prendere nota della password del file `server_cert.p12` che dovremo poi impostare sulla configurazione dell'applicazione Quarkus. 
+L'esecuzione del comando precedente, dovrebbe produrre un output simile a quello mostrato a seguire. Ricordate di prendere nota della password del file `server_cert.p12` che dovremo poi impostare sulla configurazione dell'applicazione Quarkus.
 
 ```text
 ✅ OpenSSL version 3.3.2 is suitable.
@@ -1065,6 +1065,7 @@ In questa configurazione sono state utilizzate le proprietà che fanno parte del
 Adesso che abbiamo configurato l'applicazione Quarkus per l'attivazione del protocollo HTTPS, potremo procedere con il test della configurazione HTTPS/TLS.
 
 ### Step 5 - Test della configurazione HTTPS/TLS
+
 Per testare la configurazione HTTPS/TLS, possiamo eseguire il comando `quarkus:dev` e verificare che l'applicazione Quarkus sia in esecuzione e che accetti solo richieste HTTPS. 
 
 Dall'output del comando `quarkus:dev`, dovremmo notare che l'applicazione Quarkus è in esecuzione e accetti solo richieste HTTPS sulla porta 8443. L'output del comando `quarkus:dev` dovrebbe essere simile a quello mostrato a seguire.
@@ -1266,7 +1267,7 @@ Al momento, l’applicazione Quarkus è configurata per supportare l’autentica
 
 Ricordiamo che ruoli e attributi sono informazioni che dobbiamo estrarre dal certificato client per poterli utilizzare all'interno dell'applicazione Quarkus. L'OID che identifica i ruoli è `1.3.6.1.4.1.99999.1`, mentre  `1.3.6.1.4.1.99999.2` identifica l'attributo DeviceId.
 
-I componenti `SecurityIdentityAugmentor` che implementeremo dovranno verificare che i valori degli OID siano presenti nel certificato del client e, in caso affermativo, estrarli e aggiungerli all’oggetto `SecurityIdentity` di Quarkus. Qualora i valori degli OID non rispettino le regole di validazione (vedi pattern per l’OID dei ruoli, capitolo *Generazione dei certificati* e capitolo *Algoritmo per la generazione del DeviceId*), il componente `SecurityIdentityAugmentor` dovrà rifiutare la richiesta di autenticazione.
+I componenti `SecurityIdentityAugmentor` che implementeremo dovranno verificare che i valori degli OID siano presenti nel certificato del client e, in caso affermativo, estrarli e aggiungerli all’oggetto `SecurityIdentity` di Quarkus. Qualora i valori degli OID non rispettino le regole di validazione (vedi pattern per l’OID dei ruoli, capitolo _Generazione dei certificati_ e capitolo _Algoritmo per la generazione del DeviceId_), il componente `SecurityIdentityAugmentor` dovrà rifiutare la richiesta di autenticazione.
 
 Per raggiungere l'obiettivo andremo a implementare tre classi.
 
@@ -1396,7 +1397,7 @@ sequenceDiagram
 
 Figura 7 - Sequence Diagrama del flusso di esecuzione di `RolesAugmentor.augment()`.
 
-Il terzo diagramma di sequenza relativo a `OidSecurityIdentityAugmentor.augment()` evidenzia che, in questo caso, il componente non agisce direttamente su `SecurityIdentity`, ma si limita a verificare che il valore dell’OID che identifica il DeviceId sia presente e valido secondo l’algoritmo descritto nel capitolo *Algoritmo per la generazione del DeviceId*.
+Il terzo diagramma di sequenza relativo a `OidSecurityIdentityAugmentor.augment()` evidenzia che, in questo caso, il componente non agisce direttamente su `SecurityIdentity`, ma si limita a verificare che il valore dell’OID che identifica il DeviceId sia presente e valido secondo l’algoritmo descritto nel capitolo _Algoritmo per la generazione del DeviceId_.
 
 ```mermaid
 sequenceDiagram
@@ -1454,9 +1455,9 @@ Nella classe `OidSecurityIdentityAugmentor` abbiamo implementato il metodo di pr
 
 Il tag di riferimento per questo step è [tutorial-step-8-impl-rest-services](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-step-8-impl-service-rest/src/main/java/it/dontesta/quarkus/tls/auth/ws/security/identity).
 
-L’impostazione dell’autenticazione mTLS è stata completata con successo. Ora possiamo procedere con la realizzazione dei servizi REST che utilizzeranno tale autenticazione. A tal fine, creeremo i servizi REST definiti nel secondo requisito, descritto nella tabella 1 del capitolo *Requisiti dell’applicazione Quarkus*.
+L’impostazione dell’autenticazione mTLS è stata completata con successo. Ora possiamo procedere con la realizzazione dei servizi REST che utilizzeranno tale autenticazione. A tal fine, creeremo i servizi REST definiti nel secondo requisito, descritto nella tabella 1 del capitolo _Requisiti dell’applicazione Quarkus_.
 
-I servizi REST che andremo a realizzare troveranno spazio all'interno del package [it.dontesta.quarkus.tls.auth.ws.resources.endpoint.v1](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-step-8-impl-service-rest/src/main/java/it/dontesta/quarkus/tls/auth/ws/resources/endpoint/v1) e saranno implementati dalla classe [ConnectionInfoResourceEndPoint](https://github.com/amusarra/quarkus-mtls-auth-tutorial/blob/tutorial-step-8-impl-service-rest/src/main/java/it/dontesta/quarkus/tls/auth/ws/resources/endpoint/v1/ConnectionInfoResourceEndPoint.java). 
+I servizi REST che andremo a realizzare troveranno spazio all'interno del package [it.dontesta.quarkus.tls.auth.ws.resources.endpoint.v1](https://github.com/amusarra/quarkus-mtls-auth-tutorial/tree/tutorial-step-8-impl-service-rest/src/main/java/it/dontesta/quarkus/tls/auth/ws/resources/endpoint/v1) e saranno implementati dalla classe [ConnectionInfoResourceEndPoint](https://github.com/amusarra/quarkus-mtls-auth-tutorial/blob/tutorial-step-8-impl-service-rest/src/main/java/it/dontesta/quarkus/tls/auth/ws/resources/endpoint/v1/ConnectionInfoResourceEndPoint.java).
 
 La classe `ConnectionInfoResourceEndPoint` implementerà i seguenti metodi:
 
