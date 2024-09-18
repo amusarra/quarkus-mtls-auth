@@ -19,7 +19,7 @@ La sicurezza delle applicazioni web è sempre più critica, soprattutto in conte
 
 ## Cos’è l’autenticazione reciproca TLS (mTLS)?
 
-L’autenticazione reciproca TLS (o mutual TLS o mTLS) è un’estensione del protocollo [TLS](https://it.wikipedia.org/wiki/Transport_Layer_Security) standard. Solitamente TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. __Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche**.
+L’autenticazione reciproca TLS (o mutual TLS o mTLS) è un’estensione del protocollo [TLS](https://it.wikipedia.org/wiki/Transport_Layer_Security) standard. Solitamente TLS viene utilizzato per proteggere le comunicazioni tra client e server, dove solo il server deve presentare un certificato valido per autenticarsi con il client. **Con mTLS, anche il client deve presentare un certificato valido, garantendo così che entrambe le parti siano autentiche**.
 
 Questa autenticazione bidirezionale è particolarmente utile in applicazioni distribuite, microservizi o API, dove sia il client che il server devono fidarsi reciprocamente prima di scambiare dati sensibili.
 
@@ -46,7 +46,7 @@ sequenceDiagram
 
 Figura 1 - Sequence diagramm del processo di autenticazione reciproca TLS (mTLS)
 
-È importate capire che la verifica dei certificati nel contesto mTLS è un processo cruciale per garantire la sicurezza della connessione, impedendo la comunicazione con entità non fidate o malintenzionate. Se una delle verifiche dovesse fallire (ad esempio, il certificato è scaduto o non valido), l’handshake sarà interrotto e la connessione non sarà stabilita. 
+È importate capire che la verifica dei certificati nel contesto mTLS è un processo cruciale per garantire la sicurezza della connessione, impedendo la comunicazione con entità non fidate o malintenzionate. Se una delle verifiche dovesse fallire (ad esempio, il certificato è scaduto o non valido), l’handshake sarà interrotto e la connessione non sarà stabilita.
 
 Vediamo di approfondire quali sono i passaggi chiave per la verifica dei certificati in un contesto mTLS.
 
