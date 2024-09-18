@@ -2432,7 +2432,45 @@ Ottimo! Abbiamo generato il file `tsl-it_bundle.pem` con i certificati validi es
 
 Adesso la nostra applicazione Quarkus è potenzialmente pronta per accettare client che si vogliano per esempio autenticare tramite CIE o CNS. Potenzialmente, perché l'attuale implementazione andrebbe estesa per garantire l'accesso ai servizi REST ma questo è un esercizio che lascio a voi.
 
+### Test di accesso con la TS-CNS
+
+Adesso che abbiamo integrato il TSL nel nostro progetto Quarkus, dovremmo essere nelle condizioni di poter accedere alla Dev Console di Quarkus utilizzando per esempio la TS-CNS. Questo test ci permetterà di verificare che il TLS sia configurato correttamente e che il server sia in grado di autenticare il client.
+
+Il comportamento atteso è che l'accesso alla Dev Console di Quarkus avvenga senza alcun problema dopo avere inserito il PIN della TS-CNS mentre l'accesso ai servizi REST dovrebbe fallire perché il certificato client della TS-CNS non rispetta i requisiti che abbiamo imposto per i certificati client (vedi tabella sui requisiti dei certificati client).
+
+Per eseguire il test diamo per scontato che la macchina su cui eseguirete il test abbia installato e configurato correttamente un lettore di smart card compatibile con la vostra TS-CNS e che il browser utilizzato sia compatibile e configurato per l'uso della smart card.
+
+Il test può essere eseguito in due modi, uno semplice e uno più avanzato.
+
+1. dopo aver collegato il lettore di smart card e inserita la TS-CNS, puntando il browser sull'indirizzo `https://localhost:8443/q/dev/`, il comportamento atteso è che sia visualizzato il pop-up per l'inserimento del PIN, successivamente visulizzato il pop-up per la selezione e conferma del certificato client e infine la Dev Console di Quarkus;
+2. utilizzando cURL avendo cura di istruire il comando curl a utilizzare il certificato client presente all'interno della TS-CNS. Per questo test vi rimando al video [Autenticazione con la TS-CNS: come usarla in modalità batch](https://www.youtube.com/watch?v=N-IJeuN1oyE).
+
+A seguire le immagine del pop-up per l'inserimento del PIN della TS-CNS, del pop-up per la selezione del certificato client e della Dev Console di Quarkus.
+
+![alt text](resources/images/request-smart-card-ts-cns-pin.png)
+
+Figura 14 - Pop-up per l'inserimento del PIN della TS-CNS
+
+![alt text](resources/images/request-smart-card-ts-cns-select-certificate.png)
+
+Figura 15 - Pop-up per la selezione del certificato client
+
+![alt text](resources/images/quarkus-dev-console.png)
+
+Figura 16 - Dev Console di Quarkus
+
+Ottimo! Abbiamo ottenuto il risultato atteso.
+Accedendo al servizio REST <https://localhost:8443/api/v1/connection-info/user-identity> dovremmo ottenere l'accesso negato al servizio in virtù del fatto che il certificato della TS-CNS non rispetta i requisiti imposti dalla nostra implementazione.
+
+![alt text](resources/images/errore-accesso-servizio-rest-via-ts-cns.png)
+
+Figura 17 - Accesso negato al servizio REST
+
+Come ho scritto in precedenza, l'estensione dell'implementazione per supportare i certificati digitali della TS-CNS o CIE è un esercizio che lascio a voi.
+
 ## Considerazioni finali
+
+Wow! Abbiamo fatto un bel percorso.
 
 L’implementazione di TLS Mutual Authentication (mTLS) utilizzando il framework Quarkus rappresenta un passo cruciale per garantire comunicazioni sicure e affidabili tra client e server. Il protocollo TLS, che cifra i dati trasmessi, viene potenziato con l’introduzione di mTLS, permettendo la doppia autenticazione tramite l’uso di certificati sia da parte del client che del server.
 
