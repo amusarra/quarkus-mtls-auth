@@ -2469,6 +2469,22 @@ Figura 17 - Accesso negato al servizio REST
 
 Come ho scritto in precedenza, l'estensione dell'implementazione per supportare i certificati digitali della TS-CNS o CIE è un esercizio che lascio a voi.
 
+## Risorse
+
+- [1] [Antonio Musarra's Blog - Liferay 7.2: Esempio di Two-Way SSL/TLS Mutual Authentication Client](https://www.dontesta.it/2020/02/25/liferay-7-2-esempio-di-two-way-ssl-tls-mutual-authentication-client/)
+- [2] [Antonio Musarra's Blog - Docker Image Apache SSL/TLS Mutual Authentication on Azure Cloud](https://www.dontesta.it/2020/02/04/docker-image-apache-ssl-tls-mutual-authentication-on-azure-cloud/)
+- [3] [Antonio Musarra's Blog - Cos’è il progetto CIE/CNS Apache Docker](https://www.dontesta.it/2020/01/26/cose-il-progetto-cie-cns-apache-docker/)
+- [4] [theRedCode - Differenze tra keystore e truststore](https://theredcode.it/devops/differenze-tra-keystore-e-truststore/)
+- [5] [theRedCode - Certificati Self-Signed e OpenSSL](https://theredcode.it/devops/self-signed-certificati-openssl/)
+- [4] [GitHub - CIE/CNS Apache Docker](https://github.com/italia/cie-cns-apache-docker)
+- [5] [GitHub - Docker Apache SSL/TLS Mutual Authentication](https://github.com/amusarra/docker-apache-ssl-tls-mutual-authentication)
+- [6] [GitHub - CIE/CNS Auth Token SSO](https://github.com/smclab/cie-cns-auth-token-sso)
+- [7] [Video - Autenticazione con la TS-CNS: come usarla in modalità batch](https://www.youtube.com/watch?v=N-IJeuN1oyE)
+- [8] [Video - Cos'è il progetto CIE/CNS Apache Docker - Developers Italia](https://www.youtube.com/watch?v=TcAzn1POhsM)
+- [9] [eBook - Liferay SSL/TLS Security. Come configurare il bundle Liferay per abilitare il protocollo SSL/TLS](https://www.slideshare.net/slideshow/liferay-ssltls-security-come-configurare-il-bundle-liferay-per-funzionare-in-modalit-sicura-tramite-il-protocollo-ssltls/151608797)
+- [10] [Book - Implementing SSL/TLS](https://amzn.to/47uFKOg)
+- [11] [Book - Network Security with OpenSSL](https://amzn.to/3zoGSGE)
+
 ## Considerazioni finali
 
 Wow! Abbiamo fatto un bel percorso.
