@@ -1831,7 +1831,7 @@ Press [e] to edit command line args (currently ''), [r] to resume testing, [o] T
 
 Console 18 - Avvio dell'applicazione Quarkus
 
-Avviata l'applicazione, possiamo preparare un set di richieste HTTP verso i due endpoint REST che abbiamo implementato. Per fare ciò, possiamo utilizzare un tool come `curl` o `Postman`. In questo esempio, utilizzeremo `curl` per inviare le richieste HTTP.
+Avviata l'applicazione, possiamo preparare un set di richieste HTTP verso i due endpoint REST che abbiamo implementato. Per fare ciò, possiamo utilizzare un tool come `curl` o `Postman`. In questo esempio, utilizzeremo `curl` per inviare le richieste HTTP. In pipe (|) al comando `curl` è stato incluso l'utilizzo del tool `jq` che ci permette di ottenere un output più leggibile (in formato JSON) dei risultati delle richieste HTTP. Non è obbligatorio, ma è consigliabile [installare il tool](https://jqlang.github.io/jq/) `jq` per poter leggere meglio l'output dei comandi.
 
 Tenendo davanti a noi la tabella 2 con i certificati client generati (in formato PKCS#12), potremo procedere con i test di accesso ai servizi REST, verificando che l'output sia quello atteso. Ricordiamo che l'output dipenderà dal certificato client utilizzato per l'accesso ai servizi REST.
 
