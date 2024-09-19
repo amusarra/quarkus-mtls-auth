@@ -34,7 +34,7 @@ check_uuidgen_installed() {
 # Function to check OpenSSL version
 # @param REQUIRED_VERSION: The required OpenSSL version
 check_openssl_version() {
-  local REQUIRED_VERSION="3.3.1"
+  local REQUIRED_VERSION="3.0.7"
   local current_version=$(openssl version | awk '{print $2}')
 
   if version_ge "$current_version" "$REQUIRED_VERSION"; then
