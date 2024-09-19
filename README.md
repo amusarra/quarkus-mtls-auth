@@ -1,10 +1,10 @@
-# Quarkus Mutual TLS (mTLS) Authentication POC
+# Tutorial Project for Quarkus Mutual TLS (mTLS) Authentication POC
 
 [![Keep a Changelog v1.1.0 badge](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.1.0-%23E05735)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![code of conduct](https://img.shields.io/badge/Conduct-Contributor%20Covenant%202.1-purple.svg)](CODE_OF_CONDUCT.md)
 
-This project is linked to the article [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://bit.ly/3MQPA3v) published on Antonio Musarra Blog. To use the project properly I therefore recommend you read the article that will guide you step by step.
+This tutorial project is linked to the article [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://bit.ly/3MQPA3v) published on Antonio Musarra Blog. To use the project properly I therefore recommend you read the article that will guide you step by step.
 
 ## Architecture Overview
 
@@ -122,6 +122,15 @@ You can run your application in dev mode that enables live coding using:
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 
+> **_WARNING:_**  with the current configuration of the application, it's listening only on HTTPS port 8443. You need to configure your browser to accept the self-signed certificate used by the server. The Dev UI is available at <https://localhost:8443/q/dev/>.
+
+> **_NOTE on Certificate_**: when run phase compile process, Maven will generate a self-signed CA and Server certificate in `src/main/resources/certs` directory and start the download TSL process updater and create a PEM bundle in default directory `/tmp/tsl-it`. Without the TSL bundle, the application will not start.
+
+Below is an asciinema recording of the application running in dev mode.
+
+
+[![asciicast](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg.svg)](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg)
+
 ## Packaging and running the application
 
 The application can be packaged using:
@@ -167,4 +176,3 @@ If you want to learn more about building native executables, please consult <htt
 - ArC ([guide](https://quarkus.io/guides/cdi-reference)): Build time CDI dependency injection
 - REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
 - REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-
