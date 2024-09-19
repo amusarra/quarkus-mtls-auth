@@ -54,7 +54,10 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # Source common functions
 source "$SCRIPT_DIR/_common.sh"
 
-# Check if OpenSSL is installed and the version is correct
+# Check if the required tools are installed
+check_zsh_version
+check_bash_version
+check_keytool_installed
 check_openssl_installed
 check_openssl_version
 

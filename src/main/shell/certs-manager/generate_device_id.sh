@@ -29,7 +29,9 @@ source "$SCRIPT_DIR/_common.sh"
 # In a real-world scenario, this should be stored securely
 DEVICE_ID_SECRET_KEY="${DEVICE_ID_SECRET_KEY:-my_secret_key_for_generate_device_id}"
 
-# Check if required commands are available
+# Check if the required tools are installed
+check_zsh_version
+check_bash_version
 check_openssl_installed
 check_uuidgen_installed
 

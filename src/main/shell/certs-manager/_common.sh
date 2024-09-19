@@ -96,6 +96,30 @@ check_keytool_installed() {
   fi
 }
 
+# Function to check if the Bash version is at least 5.0
+check_bash_version() {
+  if [ -n "$BASH_VERSION" ]; then
+    local bash_version
+    bash_version=$(bash --version | head -n 1 | awk '{print $4}')
+    if [[ $(echo "$bash_version 5.0" | awk '{print ($1 >= $2)}') -ne 1 ]]; then
+      echo -e "${RED}❌ Bash version 5.0 or higher is required. Current version: ${bash_version}${NC}"
+      exit 1
+    fi
+  fi
+}
+
+# Function to check if the Zsh version is at least 5.0
+check_zsh_version() {
+  if [ -n "$ZSH_VERSION" ]; then
+    local zsh_version
+    zsh_version=$(zsh --version | awk '{print $2}')
+    if [[ $(echo "$zsh_version 5.0" | awk '{print ($1 >= $2)}') -ne 1 ]]; then
+      echo -e "${RED}❌ Zsh version 5.0 or higher is required. Current version: ${zsh_version}${NC}"
+      exit 1
+    fi
+  fi
+}
+
 # Function to generate a CA certificate
 # @param private_key_file: The private key file path
 # @param ca_certificate_file: The CA certificate file path
