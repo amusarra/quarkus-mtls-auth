@@ -269,6 +269,16 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>download-tsl-it</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/shell/certs-manager/download_tsl_it_certs.sh</executable>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>generate-cert-clean</id>
                         <phase>clean</phase>
                         <goals>

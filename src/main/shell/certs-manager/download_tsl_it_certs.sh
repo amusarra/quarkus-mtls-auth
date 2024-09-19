@@ -262,7 +262,14 @@ done
 
 # Main function
 main() {
-  print_msg "${YELLOW}" "🚀 Starting certificate update process"
+  print_msg "${YELLOW}" "🚀 Starting the TSL-IT certificate update process"
+
+  # Check if the PEM bundle file already exists
+  if [ -f "${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}" ]; then
+    print_msg "${GREEN}" "✅ PEM bundle file already exists at ${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}. Skipping generation."
+    exit 0
+  fi
+
   check_keytool_installed
   check_xidel_installed
   check_curl_installed
