@@ -810,7 +810,7 @@ Per sviluppare la nostra soluzione mTLS, abbiamo necessità di un set di strumen
    2. OpenSSL 3.x
    3. Curl 8.x
    4. Java KeyTool (in genere installato con la JDK)
-   5. [Xidel](https://github.com/benibela/xidel) è uno strumento da riga di comando e una libreria che consente di estrarre dati da documenti XML, HTML e JSON usando XPath, XQuery o CSS Selectors
+   5. XmlStarlet è un insieme di strumenti da riga di comando progettato per la manipolazione di documenti XML. Viene utilizzato per analizzare, modificare, convertire e validare file XML, ed è particolarmente utile per chi lavora con grandi quantità di dati XML o deve automatizzare operazioni su questi file.
 
 La versione del framework di Quarkus deve essere dalla 3.14 in poi, questo perché alcune delle funzionalità, come per esempio il TSL Registry è stato introdotto dalla versione 3.14.0.
 
