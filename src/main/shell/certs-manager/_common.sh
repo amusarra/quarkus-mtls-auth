@@ -60,6 +60,20 @@ check_xidel_installed() {
   fi
 }
 
+# Function to check if xmlstarlet is installed
+check_xmlstarlet_installed() {
+  if ! command -v xmlstarlet &>/dev/null; then
+    print_msg "${RED}" "❌ xmlstarlet is not installed."
+    print_msg "${YELLOW}" "To install xmlstarlet, use the following command based on your distribution:"
+    print_msg "${BLUE}" "Debian/Ubuntu: sudo apt-get install xmlstarlet"
+    print_msg "${BLUE}" "Fedora: sudo dnf install xmlstarlet"
+    print_msg "${BLUE}" "CentOS/RHEL: sudo yum install xmlstarlet"
+    print_msg "${BLUE}" "Arch Linux: sudo pacman -S xmlstarlet"
+    print_msg "${BLUE}" "macOS (using Homebrew): brew install xmlstarlet"
+    exit 1
+  fi
+}
+
 # Function to check if curl is installed
 check_curl_installed() {
   if ! command -v curl &>/dev/null; then

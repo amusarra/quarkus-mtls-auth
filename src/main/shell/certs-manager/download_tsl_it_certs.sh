@@ -169,7 +169,7 @@ parse_and_save_certs() {
 
   # Extract certificates from the XML content using xidel
   local certs
-  certs=$(xidel --xpath "//ServiceInformation[ServiceTypeIdentifier='http://uri.etsi.org/TrstSvc/Svctype/IdV' and ServiceStatus='http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel']//X509Certificate" "${XML_OUTPUT_FILE}")
+  certs=$(xmlstarlet sel -T -t -m '//_:ServiceInformation[_:ServiceTypeIdentifier="http://uri.etsi.org/TrstSvc/Svctype/IdV" and _:ServiceStatus="http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/recognisedatnationallevel"]//_:X509Certificate' -v 'text()' -nl "${XML_OUTPUT_FILE}")
 
   # Check if the XPath found any nodes
   if [ -z "${certs}" ]; then
@@ -271,7 +271,7 @@ main() {
   fi
 
   check_keytool_installed
-  check_xidel_installed
+  check_xmlstarlet_installed
   check_curl_installed
   mkdir -p "${OUTPUT_PATH_PEM_BUNDLE}"
 
