@@ -124,7 +124,8 @@ You can run your application in dev mode that enables live coding using:
 
 > **_WARNING:_**  with the current configuration of the application, it's listening only on HTTPS port 8443. You need to configure your browser to accept the self-signed certificate used by the server. The Dev UI is available at <https://localhost:8443/q/dev/>.
 
-> **_NOTE on Certificate_**: when run phase compile process, Maven will generate a self-signed CA and Server certificate in `src/main/resources/certs` directory and start the download TSL process updater and create a PEM bundle in default directory `/tmp/tsl-it`. Without the TSL bundle, the application will not start.
+> **_NOTE on Certificate_**: when run phase compile process, Maven will generate a self-signed CA and Server certificate in `src/main/resources/certs` directory and start the download TSL process updater and create a PEM bundle in default directory `/tmp/tsl-it`. Without the TSL bundle, the application will not start. 
+> If you run the `mvn clean` command, the certificates will be deleted and you will need to regenerate them and consequently cannot start the application without review the configuration in the `application.properties` file with the new passwords.
 
 Below is an asciinema recording of the application running in dev mode.
 
