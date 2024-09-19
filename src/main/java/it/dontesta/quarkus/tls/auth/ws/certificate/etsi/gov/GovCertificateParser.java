@@ -152,7 +152,8 @@ public class GovCertificateParser {
           .map(serviceInfoElement -> serviceInfoElement.getElementsByTagName("X509Certificate")
               .item(0))
           .filter(certNode -> certNode != null && certNode.getNodeType() == Node.ELEMENT_NODE)
-          .forEach(certNode -> saveCertificateAsPem(certNode.getTextContent().trim(), null));
+          .forEach(certNode -> saveCertificateAsPem(certNode.getTextContent().trim(),
+              outputPath.toString()));
     } catch (Exception e) {
       log.error("Error parsing XML", e);
     }
@@ -258,7 +259,7 @@ public class GovCertificateParser {
         for (byte b : fingerprintBytes) {
           fingerprint.append(String.format("%02X:", b));
         }
-        if (fingerprint.length() > 0) {
+        if (!fingerprint.isEmpty()) {
           fingerprint.setLength(fingerprint.length() - 1); // Remove trailing colon
         }
 
