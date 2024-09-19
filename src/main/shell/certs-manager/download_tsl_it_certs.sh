@@ -18,7 +18,7 @@
 #   --help                          Show this help message
 #
 # Dependencies:
-#   - xidel
+#   - xmlstarlet
 #   - curl
 #   - openssl
 #
