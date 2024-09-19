@@ -68,6 +68,8 @@ public class GovCertificateUpdater {
       }
     } catch (IOException | InterruptedException e) {
       log.error("Error updating certificates: %s".formatted(e.getMessage()));
+
+      Thread.currentThread().interrupt();
     }
   }
 

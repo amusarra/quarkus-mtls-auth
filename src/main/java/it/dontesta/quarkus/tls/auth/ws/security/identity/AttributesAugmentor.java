@@ -48,9 +48,11 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
   public Uni<SecurityIdentity> augment(SecurityIdentity identity,
                                        AuthenticationRequestContext context) {
 
-    log.debug(
-        "Augmenting SecurityIdentity with attributes extracted from extension with OID: "
-        + OID_DEVICE_ID);
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Augmenting SecurityIdentity with attributes extracted from extension with OID: %s".formatted(
+              OID_DEVICE_ID));
+    }
 
     return Uni.createFrom().item(build(identity));
   }
@@ -74,7 +76,10 @@ public class AttributesAugmentor implements SecurityIdentityAugmentor {
 
       if (deviceIdFromCert != null) {
         String deviceId = CertificateUtil.decodeExtensionValue(deviceIdFromCert);
-        log.debug("Decoded Device ID from certificate: " + deviceId);
+
+        if (log.isDebugEnabled()) {
+          log.debug("Decoded Device ID from certificate: %s".formatted(deviceId));
+        }
 
         if (deviceId != null) {
           // Remove the prefix "DeviceId="

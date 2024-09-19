@@ -50,9 +50,11 @@ public class RolesAugmentor implements SecurityIdentityAugmentor {
   public Uni<SecurityIdentity> augment(SecurityIdentity identity,
                                        AuthenticationRequestContext context) {
 
-    log.debug(
-        "Augmenting SecurityIdentity with roles extracted from certificate with OID: "
-        + OID_ROLES);
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Augmenting SecurityIdentity with roles extracted from certificate with OID: %s".formatted(
+              OID_ROLES));
+    }
 
     return Uni.createFrom().item(build(identity));
   }

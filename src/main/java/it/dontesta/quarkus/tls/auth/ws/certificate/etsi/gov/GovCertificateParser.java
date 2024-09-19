@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -197,7 +198,6 @@ public class GovCertificateParser {
       for (Path entry : stream) {
         Files.delete(entry);
       }
-      log.debug("Cleaned output path: %s".formatted(outputPath.toString()));
     } catch (IOException e) {
       log.error("Error cleaning output path", e);
     }
@@ -227,12 +227,16 @@ public class GovCertificateParser {
               MessageDigest.getInstance("SHA-256").digest(certBase64.getBytes())));
 
       Path certPath =
-          outputPemFilePath != null ? Path.of(outputPemFilePath).resolve(hash + ".pem") :
-              outputPath.resolve(hash + ".pem");
+          Optional.ofNullable(outputPemFilePath)
+              .map(pemFilePath -> Path.of(pemFilePath).resolve(hash + ".pem"))
+              .orElseGet(() -> outputPath.resolve(hash + ".pem"));
 
       try (PemWriter pemWriter = new PemWriter(Files.newBufferedWriter(certPath))) {
         pemWriter.writeObject(pemObject);
-        log.debug("Saved certificate to {%s}".formatted(certPath));
+
+        if (log.isDebugEnabled()) {
+          log.debug("Saved certificate to {%s}".formatted(certPath));
+        }
       }
 
     } catch (CertificateExpiredException | CertificateNotYetValidException e) {
