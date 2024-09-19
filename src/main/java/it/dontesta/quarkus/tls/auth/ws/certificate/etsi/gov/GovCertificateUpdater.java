@@ -52,7 +52,7 @@ public class GovCertificateUpdater {
         .uri(URI.create(certsUrl))
         .build();
 
-    HttpResponse<String> response = null;
+    HttpResponse<String> response;
 
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
