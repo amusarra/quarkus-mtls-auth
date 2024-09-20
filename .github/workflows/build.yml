@@ -27,5 +27,7 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
           cache: maven
+      - name: Install Cert Manager Util dependencies
+        run: sudo apt-get install xmlstarlet
       - name: Build Package
         run: ./mvnw -B package --file pom.xml
