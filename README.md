@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![code of conduct](https://img.shields.io/badge/Conduct-Contributor%20Covenant%202.1-purple.svg)](CODE_OF_CONDUCT.md)
 
+![Build with Maven](https://github.com/amusarra/quarkus-mtls-auth/actions/workflows/build.yml/badge.svg)
+
 This tutorial project is linked to the article [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://bit.ly/3MQPA3v) published on Antonio Musarra Blog. To use the project properly I therefore recommend you read the article that will guide you step by step.
 
 ## Architecture Overview
