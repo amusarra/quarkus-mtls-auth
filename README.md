@@ -198,3 +198,9 @@ If you want to learn more about building native executables, please consult <htt
 - ArC ([guide](https://quarkus.io/guides/cdi-reference)): Build time CDI dependency injection
 - REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
 - REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
+
+## Team Tools
+
+Antonio Musarra's Blog Team would like inform that JetBrains is helping by provided IDE to develop the application. Thanks to its support [program for an Open Source projects](https://www.jetbrains.com/community/opensource/) !
+
+![IntelliJ IDEA logo](https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA.png)
