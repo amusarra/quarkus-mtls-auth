@@ -5,6 +5,7 @@
 
 package it.dontesta.quarkus.tls.auth.ws.certificate.etsi.gov;
 
+import io.smallrye.common.constraint.NotNull;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.ByteArrayInputStream;
@@ -70,7 +71,7 @@ public class GovCertificateParser {
   public GovCertificateParser(Logger log) {
     this.log = log;
     try {
-      outputPath = Files.createTempDirectory("gov-trust-certs");
+      outputPath = Files.createTempDirectory("gov-trust-certs").toAbsolutePath();
       log.info("Gov Trust Certificates will be saved to: %s".formatted(outputPath.toString()));
     } catch (IOException e) {
       log.error("Could not create temp directory for certificates", e);
@@ -114,8 +115,13 @@ public class GovCertificateParser {
    *
    * @param xmlContent the XML content containing the certificates in Base64 format.
    */
-  public void parseAndSaveCerts(String xmlContent) {
+  public void parseAndSaveCerts(@NotNull String xmlContent) {
     try {
+      // Check if the XML content is null or empty
+      if (xmlContent == null || xmlContent.isBlank() || xmlContent.isEmpty()) {
+        throw new IllegalArgumentException("TSL XML content is null or empty");
+      }
+
       // Clean the output path before parsing and saving the certificates
       cleanOutputPath();
 
@@ -145,10 +151,8 @@ public class GovCertificateParser {
 
       // Iterate over the ServiceInformation elements and extract the X509Certificate elements
       // containing the certificates in Base64 format and save them as PEM files.
-      IntStream.range(0, serviceTypeNodes.getLength())
-          .mapToObj(serviceTypeNodes::item)
-          .filter(node -> node.getNodeType() == Node.ELEMENT_NODE)
-          .map(GovCertificateParser::apply)
+      IntStream.range(0, serviceTypeNodes.getLength()).mapToObj(serviceTypeNodes::item)
+          .filter(node -> node.getNodeType() == Node.ELEMENT_NODE).map(GovCertificateParser::apply)
           .map(serviceInfoElement -> serviceInfoElement.getElementsByTagName("X509Certificate")
               .item(0))
           .filter(certNode -> certNode != null && certNode.getNodeType() == Node.ELEMENT_NODE)
@@ -210,8 +214,16 @@ public class GovCertificateParser {
    * @param certBase64        the certificate in Base64 format.
    * @param outputPemFilePath the output path for the PEM file.
    */
-  private void saveCertificateAsPem(String certBase64, String outputPemFilePath) {
+  private void saveCertificateAsPem(@NotNull String certBase64, @NotNull String outputPemFilePath) {
     try {
+      if (certBase64 == null || certBase64.isBlank() || certBase64.isEmpty()) {
+        throw new IllegalArgumentException("Certificate in Base64 format is null or empty");
+      }
+
+      if (!Path.of(outputPemFilePath).toFile().isDirectory()) {
+        throw new IllegalArgumentException("Output path is not a directory");
+      }
+
       byte[] decodedCert = Base64.getDecoder().decode(certBase64);
       PemObject pemObject = new PemObject("CERTIFICATE", decodedCert);
 
@@ -224,13 +236,19 @@ public class GovCertificateParser {
       certificate.checkValidity();
 
       String hash = String.format("%064x",
-          new BigInteger(1,
-              MessageDigest.getInstance("SHA-256").digest(certBase64.getBytes())));
+          new BigInteger(1, MessageDigest.getInstance("SHA-256").digest(certBase64.getBytes())));
 
-      Path certPath =
-          Optional.ofNullable(outputPemFilePath)
-              .map(pemFilePath -> Path.of(pemFilePath).resolve(hash + ".pem"))
-              .orElseGet(() -> outputPath.resolve(hash + ".pem"));
+      Path certPath = Optional.ofNullable(outputPemFilePath)
+          .map(pemFilePath -> Path.of(pemFilePath).resolve(hash + ".pem"))
+          .orElseGet(() -> outputPath.resolve(hash + ".pem"));
+
+      // Normalize the path to prevent path traversal
+      certPath = certPath.normalize();
+
+      // Check if the path is within the allowed directory
+      if (!certPath.startsWith(outputPath)) {
+        throw new IOException("Invalid certificate path: %s".formatted(certPath));
+      }
 
       try (PemWriter pemWriter = new PemWriter(Files.newBufferedWriter(certPath))) {
         pemWriter.writeObject(pemObject);
@@ -244,9 +262,8 @@ public class GovCertificateParser {
       try {
         byte[] decodedCert = Base64.getDecoder().decode(certBase64);
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate certificate =
-            (X509Certificate) certFactory.generateCertificate(
-                new ByteArrayInputStream(decodedCert));
+        X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(
+            new ByteArrayInputStream(decodedCert));
 
         // Extract subject
         String subject = certificate.getSubjectX500Principal().getName();
@@ -263,8 +280,9 @@ public class GovCertificateParser {
           fingerprint.setLength(fingerprint.length() - 1); // Remove trailing colon
         }
 
-        log.warn("Certificate is expired or not yet valid. Subject: {%s}, Fingerprint: {%s}"
-            .formatted(subject, fingerprint.toString()));
+        log.warn(
+            "Certificate is expired or not yet valid. Subject: {%s}, Fingerprint: {%s}".formatted(
+                subject, fingerprint.toString()));
       } catch (CertificateException | NoSuchAlgorithmException ex) {
         log.error("Error processing expired certificate", ex);
       }

@@ -56,11 +56,12 @@ public class GovCertificateUpdater {
 
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
-      if (response.statusCode() == 200) {
+      if (response != null && response.statusCode() == 200) {
         // Parse and save the certificates
-        certParser.parseAndSaveCerts(response.body());
+        String xmlTsl = response.body();
+        certParser.parseAndSaveCerts(xmlTsl);
 
-        // Save the certificates as a PEM bundle
+        // Save the parsed certificates as a PEM bundle
         certParser.saveCertificatesAsPem(Path.of(certParser.getOutputPath()),
             Path.of(certParser.getOutputPathPemBundle()));
       } else {
