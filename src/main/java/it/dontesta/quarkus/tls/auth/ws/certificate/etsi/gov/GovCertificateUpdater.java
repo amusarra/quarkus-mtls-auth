@@ -65,10 +65,10 @@ public class GovCertificateUpdater {
         certParser.saveCertificatesAsPem(Path.of(certParser.getOutputPath()),
             Path.of(certParser.getOutputPathPemBundle()));
       } else {
-        log.warn("Failed to update certificates. Status code: %d".formatted(response.statusCode()));
+        log.warn("Failed to update certificates from the URL: %s".formatted(certsUrl));
       }
     } catch (IOException | InterruptedException e) {
-      log.error("Error updating certificates: %s".formatted(e.getMessage()));
+      log.error("Error updating certificates from the URL: %s".formatted(certsUrl));
 
       Thread.currentThread().interrupt();
     }

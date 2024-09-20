@@ -238,7 +238,7 @@ public class GovCertificateParser {
       String hash = String.format("%064x",
           new BigInteger(1, MessageDigest.getInstance("SHA-256").digest(certBase64.getBytes())));
 
-      Path certPath = Optional.ofNullable(outputPemFilePath)
+      Path certPath = Optional.of(outputPemFilePath)
           .map(pemFilePath -> Path.of(pemFilePath).resolve(hash + ".pem"))
           .orElseGet(() -> outputPath.resolve(hash + ".pem"));
 
