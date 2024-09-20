@@ -280,7 +280,6 @@
                     </execution>
                     <execution>
                         <id>generate-cert-clean</id>
-                        <phase>clean</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>

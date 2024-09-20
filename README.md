@@ -135,19 +135,21 @@ The path of the certificates can be changed in the `application.properties` file
 2. `quarkus.tls.https.key-store.p12.password=changeit=<ootb-generated-password>`
 3. `quarkus.tls.https.trust-store.pem.certs=certs/ca_cert.pem,/tmp/tsl-it/tsl-it_bundle.pem`
 
-With the above configuration, the application will start with the default self-signed certificates without any issues.
+With the above configuration, the application will start with the default self-signed certificates without any issues. Below is an asciinema recording of the application running in dev mode.
+
+[![asciicast](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg.svg)](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg)
 
 If you want to use your certificates, you need to change the configuration in the `application.properties` file and replace the certificates in the `src/main/resources/certs` directory.
 
-> 🛎️ **_NOTE on Certificate_**: when run phase compile process, Maven will generate a self-signed CA and Server certificate in `src/main/resources/certs` directory and start the download TSL process updater and create a PEM bundle in default directory `/tmp/tsl-it`. Without the TSL bundle, the application will not start. 
-> If you run the `mvn clean` command, the certificates will be deleted, and you will need to regenerate them and consequently cannot start the application without review the configuration in the `application.properties` file with the new passwords.
+If you want to generate the new certificates, you can use the following command:
+
+1. Clean the OOTB certificates: `./mvnw exec:exec@generate-cert-clean`
+2. Generate the new CA certificate: `./mvnw exec:exec@generate-ca-certificate`
+3. Generate the new Server certificate: `./mvnw exec:exec@generate-server-certificate`
+
+🛎️ The step 2 and 3, you can skip because when you run the application in dev mode, the certificates are generated automatically.
 
 For more information about the certificates, you can refer to the article [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://bit.ly/3MQPA3v).
-
-Below is an asciinema recording of the application running in dev mode.
-
-
-[![asciicast](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg.svg)](https://asciinema.org/a/AXCFc2ugDJTISRU6SG86l5Ihg)
 
 ## Packaging and running the application
 
