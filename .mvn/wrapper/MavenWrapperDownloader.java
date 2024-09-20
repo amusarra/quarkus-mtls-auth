@@ -30,64 +30,83 @@ import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class MavenWrapperDownloader {
-    private static final String WRAPPER_VERSION = "3.3.2";
+  private static final String WRAPPER_VERSION = "3.3.2";
 
-    private static final boolean VERBOSE = Boolean.parseBoolean(System.getenv("MVNW_VERBOSE"));
+  private static final boolean VERBOSE = Boolean.parseBoolean(System.getenv("MVNW_VERBOSE"));
 
-    public static void main(String[] args) {
-        log("Apache Maven Wrapper Downloader " + WRAPPER_VERSION);
+  public static void main(String[] args) {
+    log("Apache Maven Wrapper Downloader " + WRAPPER_VERSION);
 
-        if (args.length != 2) {
-            System.err.println(" - ERROR wrapperUrl or wrapperJarPath parameter missing");
-            System.exit(1);
-        }
-
-        try {
-            log(" - Downloader started");
-            final URL wrapperUrl = URI.create(args[0]).toURL();
-            final String jarPath = args[1].replace("..", ""); // Sanitize path
-            final Path wrapperJarPath = Paths.get(jarPath).toAbsolutePath().normalize();
-            downloadFileFromURL(wrapperUrl, wrapperJarPath);
-            log("Done");
-        } catch (IOException e) {
-            System.err.println("- Error downloading: " + e.getMessage());
-            if (VERBOSE) {
-                e.printStackTrace();
-            }
-            System.exit(1);
-        }
+    if (args.length != 2) {
+      System.err.println(" - ERROR wrapperUrl or wrapperJarPath parameter missing");
+      System.exit(1);
     }
 
-    private static void downloadFileFromURL(URL wrapperUrl, Path wrapperJarPath)
-            throws IOException {
-        log(" - Downloading to: " + wrapperJarPath);
-        if (System.getenv("MVNW_USERNAME") != null && System.getenv("MVNW_PASSWORD") != null) {
-            final String username = System.getenv("MVNW_USERNAME");
-            final char[] password = System.getenv("MVNW_PASSWORD").toCharArray();
-            Authenticator.setDefault(new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username, password);
-                }
-            });
-        }
-        Path temp = wrapperJarPath
-                .getParent()
-                .resolve(wrapperJarPath.getFileName() + "."
-                        + Long.toUnsignedString(ThreadLocalRandom.current().nextLong()) + ".tmp");
-        try (InputStream inStream = wrapperUrl.openStream()) {
-            Files.copy(inStream, temp, StandardCopyOption.REPLACE_EXISTING);
-            Files.move(temp, wrapperJarPath, StandardCopyOption.REPLACE_EXISTING);
-        } finally {
-            Files.deleteIfExists(temp);
-        }
-        log(" - Downloader complete");
+    try {
+      log(" - Downloader started");
+      final URL wrapperUrl = URI.create(args[0]).toURL();
+      final String jarPath = args[1].replace("..", ""); // Sanitize path
+      final Path wrapperJarPath = Paths.get(jarPath).toAbsolutePath().normalize();
+      downloadFileFromURL(wrapperUrl, wrapperJarPath);
+      log("Done");
+    } catch (IOException e) {
+      System.err.println("- Error downloading: " + e.getMessage());
+      if (VERBOSE) {
+        e.printStackTrace();
+      }
+      System.exit(1);
     }
+  }
 
-    private static void log(String msg) {
-        if (VERBOSE) {
-            System.out.println(msg);
-        }
+  private static void downloadFileFromURL(URL wrapperUrl, Path wrapperJarPath)
+      throws IOException {
+    log(" - Downloading to: " + wrapperJarPath);
+    if (!isValidUrl(wrapperUrl)) {
+      throw new IOException("Invalid URL: " + wrapperUrl);
     }
+    if (System.getenv("MVNW_USERNAME") != null && System.getenv("MVNW_PASSWORD") != null) {
+      final String username = System.getenv("MVNW_USERNAME");
+      final char[] password = System.getenv("MVNW_PASSWORD").toCharArray();
+      Authenticator.setDefault(new Authenticator() {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(username, password);
+        }
+      });
+    }
+    Path temp = wrapperJarPath
+        .getParent()
+        .resolve(wrapperJarPath.getFileName() + "."
+                 + Long.toUnsignedString(ThreadLocalRandom.current().nextLong()) + ".tmp");
+    try (InputStream inStream = wrapperUrl.openStream()) {
+      Files.copy(inStream, temp, StandardCopyOption.REPLACE_EXISTING);
+      Files.move(temp, wrapperJarPath, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      Files.deleteIfExists(temp);
+    }
+    log(" - Downloader complete");
+  }
 
+  private static void log(String msg) {
+    if (VERBOSE) {
+      System.out.println(msg);
+    }
+  }
+
+  private static boolean isValidUrl(URL url) {
+    // Implement your URL validation logic here
+    // For example, check if the URL is not pointing to internal IPs or localhost
+    String host = url.getHost();
+    return !host.equals("localhost") && !host.startsWith("127.") && !host.startsWith("10.") &&
+           !host.startsWith("192.168");
+  }
+
+  private static URL validateUrl(URL url) throws IOException {
+    if (!isValidUrl(url)) {
+      throw new IOException("Invalid URL: " + url);
+    }
+    return url;
+  }
+
+  final URL wrapperUrl = validateUrl(URI.create(args[0]).toURL());
 }
