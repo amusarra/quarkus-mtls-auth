@@ -212,7 +212,7 @@ generate_fake_ca() {
   print_msg "${GREEN}" "✅ Generated fake CA certificate at ${fake_ca_cert_path}"
 
   # Add the fake CA certificate to the PEM bundle
-  cat "${fake_ca_cert_path}" >> "${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}"
+  cat "${fake_ca_cert_path}" >>"${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}"
   print_msg "${GREEN}" "✅ Added fake CA certificate to PEM bundle"
 }
 
@@ -262,7 +262,7 @@ done
 
 # Main function
 main() {
-  print_msg "${YELLOW}" "🚀 Starting the TSL-IT certificate update process"
+  print_msg "${YELLOW}" "🚀 Starting the TSL-IT certificate update process..."
 
   # Check if the PEM bundle file already exists
   if [ -f "${OUTPUT_PATH_PEM_BUNDLE}/${OUTPUT_PEM_BUNDLE_FILE_NAME}" ]; then
@@ -284,7 +284,13 @@ main() {
 
   local xml_content
   xml_content=$(curl --progress-bar -s "${CERTS_URL}")
-  print_msg "${GREEN}" "✅ Downloaded XML content"
+  if [ -z "${xml_content}" ]; then
+    print_msg "${RED}" "❌ Error downloading XML content from ${CERTS_URL}"
+    exit 1
+  else
+    print_msg "${GREEN}" "✅ Downloaded XML content from ${CERTS_URL}"
+  fi
+
   save_xml_to_file "${xml_content}"
   parse_and_save_certs
   create_pem_bundle
