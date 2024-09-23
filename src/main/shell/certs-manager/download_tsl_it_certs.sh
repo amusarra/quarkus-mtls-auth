@@ -174,7 +174,7 @@ parse_and_save_certs() {
   # Check if the XPath found any nodes
   if [ -z "${certs}" ]; then
     print_msg "${RED}" "❌ XPath set is empty. Please check the XML structure and XPath expression."
-    return
+    exit 1
   fi
 
   if [ $VERBOSE -eq 1 ]; then
