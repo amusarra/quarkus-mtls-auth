@@ -173,8 +173,8 @@ parse_and_save_certs() {
 
   # Check if the XPath found any nodes
   if [ -z "${certs}" ]; then
-    print_msg "${RED}" "❌ XPath set is empty. Please check the XML structure and XPath expression."
-    return
+    print_msg "${RED}" "❌ XPath set is empty. Please check the XML structure and XPath expression. (check your xmlstarlet version, minimum required version 1.6.1, compiled against libxml2 2.9.14 and libxslt 1.1.35)."
+    exit 1
   fi
 
   if [ $VERBOSE -eq 1 ]; then
