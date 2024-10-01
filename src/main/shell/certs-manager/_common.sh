@@ -237,13 +237,15 @@ generate_p12_file() {
 
 # Function to generate a private key
 # @param private_key_file: The private key file path
+# @param key_length: The length of the key
 generate_private_key() {
   local private_key_file=$1
+  local key_length=$2
   local password_file="${private_key_file}.password"
   local private_key_password=$(openssl rand -base64 12)
 
-  echo -e "${BLUE}🔑 Generating the private key...${NC}"
-  if ! openssl genpkey -algorithm RSA -out "$private_key_file" -aes256 -pass pass:"$private_key_password"; then
+  echo -e "${BLUE}🔑 Generating the private key with length ${key_length}...${NC}"
+  if ! openssl genpkey -algorithm RSA -out "$private_key_file" -aes256 -pass pass:"$private_key_password" -pkeyopt rsa_keygen_bits:"$key_length"; then
     echo -e "${RED}❌ Error generating the private key.${NC}"
     exit 1
   fi

@@ -54,6 +54,9 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # Source common functions
 source "$SCRIPT_DIR/_common.sh"
 
+# Default key length
+DEFAULT_KEY_LENGTH=2048
+
 # Check if the required tools are installed
 check_zsh_version
 check_bash_version
@@ -74,6 +77,7 @@ print_usage() {
   echo -e "  ${YELLOW}--organization <organization>${NC}"
   echo -e "  ${YELLOW}--organizational-unit <unit>${NC}"
   echo -e "  ${YELLOW}--common-name <name>${NC}"
+  echo -e "  ${YELLOW}--key-length <length>${NC} (default: 2048)"
   echo -e "  ${YELLOW}[--output-p12-file <file>]${NC}"
   echo -e "${BLUE}Parameters for generate-server:${NC}"
   echo -e "  ${YELLOW}--private-key-file <file>${NC}"
@@ -89,6 +93,7 @@ print_usage() {
   echo -e "  ${YELLOW}--organization <organization>${NC}"
   echo -e "  ${YELLOW}--organizational-unit <unit>${NC}"
   echo -e "  ${YELLOW}--common-name <name>${NC}"
+  echo -e "  ${YELLOW}--key-length <length>${NC} (default: 2048)"
   echo -e "  ${YELLOW}[--san-domains <domains>]${NC}"
   echo -e "  ${YELLOW}[--output-p12-file <file>]${NC}"
   echo -e "${BLUE}Parameters for generate-client:${NC}"
@@ -105,6 +110,7 @@ print_usage() {
   echo -e "  ${YELLOW}--organization <organization>${NC}"
   echo -e "  ${YELLOW}--organizational-unit <unit>${NC}"
   echo -e "  ${YELLOW}--common-name <name>${NC}"
+  echo -e "  ${YELLOW}--key-length <length>${NC} (default: 2048)"
   echo -e "  ${YELLOW}[--extensions-file <file>]${NC}"
   echo -e "  ${YELLOW}[--ext-cert-role <role>]${NC}"
   echo -e "  ${YELLOW}[--ext-cert-device-id <id>]${NC}"
@@ -118,6 +124,10 @@ shift
 declare -A PARAMS
 while [[ "$#" -gt 0 ]]; do
   case $1 in
+  --key-length)
+    KEY_LENGTH="$2"
+    shift
+    ;;
   --working-dir)
     PARAMS["WORKING_DIR"]=$2
     shift
@@ -211,6 +221,9 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
+# Set key length to default if not provided
+KEY_LENGTH=${KEY_LENGTH:-$DEFAULT_KEY_LENGTH}
+
 # Check if working directory is provided
 if [ -z "${PARAMS["WORKING_DIR"]}" ]; then
   echo -e "${RED}--working-dir is required${NC}"
@@ -237,7 +250,7 @@ generate-ca)
     exit 0
   fi
 
-  generate_private_key "$PRIVATE_KEY_FILE"
+  generate_private_key "$PRIVATE_KEY_FILE" "$KEY_LENGTH"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
   generate_ca_certificate "$PRIVATE_KEY_FILE" "$CA_CERTIFICATE_FILE" "${PARAMS["VALIDITY_DAYS"]}" "${PARAMS["COUNTRY"]}" "${PARAMS["STATE"]}" "${PARAMS["LOCALITY"]}" "${PARAMS["ORGANIZATION"]}" "${PARAMS["ORGANIZATIONAL_UNIT"]}" "${PARAMS["COMMON_NAME"]}" "$PRIVATE_KEY_PASSWORD"
 
@@ -267,7 +280,7 @@ generate-server)
     exit 0
   fi
 
-  generate_private_key "$PRIVATE_KEY_FILE"
+  generate_private_key "$PRIVATE_KEY_FILE" "$KEY_LENGTH"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
   if [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ]; then
     CA_KEY_PASSWORD=$(get_private_key_password "$CA_KEY_FILE")
@@ -307,7 +320,7 @@ generate-client)
     exit 0
   fi
 
-  generate_private_key "$PRIVATE_KEY_FILE"
+  generate_private_key "$PRIVATE_KEY_FILE" "$KEY_LENGTH"
   PRIVATE_KEY_PASSWORD=$(get_private_key_password "$PRIVATE_KEY_FILE")
   if [ -z "${PARAMS["CA_KEY_PASSWORD"]}" ]; then
     CA_KEY_PASSWORD=$(get_private_key_password "$CA_KEY_FILE")
