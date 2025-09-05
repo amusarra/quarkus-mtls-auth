@@ -10,7 +10,7 @@ slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
 date: "2025-09-02"
 version: "1.0.0"
 scope: Public
-state: Bozza
+state: Released
 ---
 
 ## Cronologia delle revisioni
@@ -51,6 +51,8 @@ Per quanto riguarda i certificati client e CA, vedremo in seguito come generarli
 Non ci sono restrizioni particolari riguardo il sistema operativo utilizzato, puoi seguire questa guida su Windows, macOS o Linux senza problemi. Per garantire la massima compatibilità, consiglio di utilizzare un terminale con supporto per i comandi Unix/Linux.
 
 Per seguire in modo fluido questa guida, assicurati di avere familiarità con i concetti di base di mTLS e Postman e avere una certa dimestichezza con la linea di comando e il formato JSON.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ## Configurazione della struttura del progetto
 
@@ -94,6 +96,8 @@ postman-mtls/
 
 Console 2 - Verifica della struttura delle cartelle (uso del comando `tree`)
 
+<div style="page-break-after: always; break-after: page;"></div>
+
 ## Configurazione delle variabili d'ambiente di Postman
 
 Usare le [variabili d'ambiente in Postman](https://learning.postman.com/docs/sending-requests/variables/managing-environments/) è fondamentale per gestire configurazioni diverse senza modificare manualmente le richieste. Le variabili possono essere utilizzate per memorizzare valori come URL, token di accesso e certificati.
@@ -129,6 +133,8 @@ touch postman-mtls/config/environments/test.json
 ```
 
 Console 3 - Creazione dei file di configurazione per gli ambienti.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 Il contenuto del file `local.json` sarà il seguente.
 
@@ -170,6 +176,8 @@ Il contenuto del file `local.json` sarà il seguente.
 ```
 
 Config. 1 - Configurazione variabili per l'ambiente locale.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 Per l'ambiente di test il contenuto del file `test.json` sarà il seguente.
 
@@ -215,6 +223,8 @@ Config. 2 - Configurazione variabili per l'ambiente di test.
 > **Importante**: come `base_url` per l'ambiente di test abbiamo indicato l'FQDN `blog.quarkus.dontesta.it`, dobbiamo quindi assicurarci che questo sia risolvibile. In questo caso è più che sufficiente aggiungere una voce nel file `/etc/hosts` del nostro ambiente di sviluppo.
 
 Una volta creati i file di configurazione per gli ambienti, possiamo procedere con la configurazione dei certificati client che saranno usati dalla CLI di Postman per eseguire le richieste HTTPS verso i servizi.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ## Configurazione dei certificati client in Postman CLI
 
@@ -279,6 +289,8 @@ Questo meccanismo consente di gestire facilmente più certificati per diversi en
 Esempio: se una richiesta viene inviata a `https://localhost:8443/api/v1/connection-info/info`, Postman CLI cercherà una configurazione con `matches` che includa esattamente quell'URL e userà il certificato specificato.
 
 Per maggiori dettagli fare riferimento ad [Add and manage CA and client certificates in Postman](https://learning.postman.com/docs/sending-requests/authorization/certificates/)
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ## Creazione della collezione Postman
 
@@ -447,6 +459,8 @@ Config. 5 - Aggiunta di test alla collection Postman
 
 Adesso che abbiamo creato le configurazioni necessarie (ambiente e certificati), creato le collection Postman senza test e con test, possiamo procedere con l'esecuzione delle collection.
 
+<div style="page-break-after: always; break-after: page;"></div>
+
 ## Esecuzione della collection con Postman CLI
 
 Arrivati a questo punto, la struttura del nostro progetto dovrebbe essere simile a quella indicata a seguire.
@@ -576,6 +590,8 @@ La **seconda immagine** mostra il dettaglio della richiesta e della risposta. Si
 
 Queste schermate aiutano a diagnosticare rapidamente i motivi del fallimento dei test e a individuare eventuali problemi di configurazione, autorizzazione o formato della risposta dell'API.
 
+<div style="page-break-after: always; break-after: page;"></div>
+
 ## Verifica del buon fine tramite exit code
 
 Quando si esegue una collection con Postman CLI, il comando restituisce un **exit code** che permette di verificare rapidamente se l'esecuzione è andata a buon fine:
@@ -601,6 +617,8 @@ fi
 ```
 
 Console 6 - Verifica del buon fine tramite exit code
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ## Integrazione di Postman CLI in pipeline CI/CD
 
@@ -630,7 +648,9 @@ Se uno o più test falliscono, lo step viene marcato come failed e la pipeline s
 
 Questa integrazione rende il processo di validazione delle API mTLS robusto, ripetibile e adatto a team DevOps e sviluppo moderno.
 
-Di seguito un esempio di report HTML generato da Postman CLI con l'opzione `--reporters html`:
+<div style="page-break-after: always; break-after: page;"></div>
+
+Di seguito un esempio di report HTML generato da Postman CLI con l'opzione `--reporters html`.
 
 ![Esempio di report HTML generato da Postman CLI - Summary](./resources/images/postman_cli_html_report_overview.jpg)
 
@@ -641,6 +661,8 @@ Figura 5 - Report HTML generato da Postman CLI - Summary
 Figura 5 - Report HTML generato da Postman CLI - Dettaglio richieste
 
 Questo report mostra in modo grafico e dettagliato lo stato delle richieste, i test eseguiti, le asserzioni superate e fallite, i tempi di risposta e tutte le informazioni utili per la validazione automatica delle API mTLS.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ## Conclusioni
 
