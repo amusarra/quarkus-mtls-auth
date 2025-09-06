@@ -351,6 +351,19 @@ Vogliamo rendere la nostra collection ancora più "smart" per il testing automat
 
 Tabella 2 - Test automatizzati per ogni richiesta e ambiente
 
+> **Perché i test sono diversi tra gli ambienti?**
+>
+> Un'attenta osservazione della Tabella 2 rivela che i test per la stessa API cambiano a seconda dell'ambiente. Qualcuno potrebbe giustamente obiettare: "I test non dovrebbero essere identici?"
+>
+> L'obiezione è valida, ma in questo contesto la differenza è **intenzionale e strategica**. Non stiamo solo verificando che l'API "funzioni", ma stiamo validando **scenari di autorizzazione specifici** legati ai diversi certificati client usati in ogni ambiente.
+>
+> Come descritto nella configurazione dei certificati (`Config. 3`), ogni ambiente associa certificati client differenti alle API. Di conseguenza:
+>
+> - **Ambiente `local`**: Per l'API `connection-info/info`, ci aspettiamo un `403 Forbidden`. Questo è un test di sicurezza "negativo": verifichiamo che un client autenticato ma **non autorizzato** venga correttamente respinto.
+> - **Ambiente `test`**: Per la stessa API, ci aspettiamo un `200 OK`. Questo è un test "positivo": verifichiamo che un client con un certificato diverso e **autorizzato** ottenga l'accesso.
+>
+> In sintesi, sfruttiamo gli ambienti per simulare diversi profili di accesso e garantire che le regole di autorizzazione basate sui certificati siano implementate correttamente. Questo approccio rende la suite di test molto più robusta, coprendo sia i percorsi di successo che quelli di fallimento attesi.
+
 Con riferimento alla tabella precedente, possiamo ora implementare i test all'interno della nostra collezione Postman. A seguire la nuova collection a cui daremo il nome `quarkus-mtls-collection-with-test.json` e posizioneremo sempre in `postman-mtls/collections`.
 
 La sezione "event" di ogni richiesta conterrà gli script per l'esecuzione dei test. Gli script di test sono scritti in JavaScript e utilizzano l'API di test di Postman. Per maggiori approfondimenti fare riferimento alla documentazione ufficiale di Postman [Write scripts to test API response data in Postman](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/).
