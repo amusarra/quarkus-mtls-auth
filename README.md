@@ -5,8 +5,19 @@
 [![code of conduct](https://img.shields.io/badge/Conduct-Contributor%20Covenant%202.1-purple.svg)](CODE_OF_CONDUCT.md)
 
 ![Build with Maven](https://github.com/amusarra/quarkus-mtls-auth/actions/workflows/build.yml/badge.svg)
+![CI Docker build](https://github.com/amusarra/quarkus-mtls-auth/actions/workflows/build-image-container-and-publish.yml/badge.svg)
 
 This tutorial project is linked to the article [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://bit.ly/3MQPA3v) published on Antonio Musarra Blog. To use the project properly I therefore recommend you read the article that will guide you step by step.
+
+## Container Images
+
+| Image                                        | Latest Tag                                                                                                                     | Repository Link                                                                   | Pull Command                                                                                                                                                                                                 |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `amusarra/quarkus-mtls-auth`        | ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/amusarra/quarkus-mtls-auth?sort=date)        | [Docker Hub](https://hub.docker.com/r/amusarra/quarkus-mtls-auth)        | Pull the latest version `docker pull amusarra/quarkus-mtls-auth:latest`                                                                                                                             |
+
+> Remember that to use the podman command, you need to replace `docker` with `podman`. Also remember that the pattern for the version of the image is `latest` or `develop`; you can replace `latest` with the desired version: `1.0.0`, `1.0.1`, or the branch name (main, develop, etc.) For example, `docker pull amusarra/quarkus-mtls-auth:develop`, referer to the develop branch of the project.
+
+For more information about the tags available, please visit the Docker Hub repository.
 
 ## Architecture Overview
 
@@ -70,6 +81,7 @@ The project is structured into several key directories and files:
 - `src/main/java/`: Contains all Java source files organized by package.
 - `src/main/resources/`: Includes application properties and other resources necessary for the application configuration.
 - `src/test/java/`: Houses the test cases for the application.
+- `src/main/docker/`: Contains Docker-related files, including Dockerfiles and configuration scripts.
 - `pom.xml`: Maven configuration file that manages dependencies, plugins, and other project-specific configurations.
 
 ### Key Components
