@@ -89,7 +89,7 @@ COPY --chown=185 target/quarkus-app/app/ /deployments/app/
 COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 # Copy the TSL-IT bundle certificates
-COPY --chown=185:0 target/quarkus-app/tsl-it/tsl-it_bundle.pem /tmp/tsl-it/
+COPY --chown=185:0 --chmod=775 target/quarkus-app/tsl-it/tsl-it_bundle.pem /tmp/tsl-it/
 
 EXPOSE 8080
 USER 185
