@@ -279,6 +279,20 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>download-tsl-it-to-prepare-quarkus-app</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/shell/certs-manager/download_tsl_it_certs.sh</executable>
+                            <arguments>
+                                <argument>--output-path</argument>
+                                <argument>${project.build.directory}/quarkus-app/tsl-it</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>generate-cert-clean</id>
                         <goals>
                             <goal>exec</goal>

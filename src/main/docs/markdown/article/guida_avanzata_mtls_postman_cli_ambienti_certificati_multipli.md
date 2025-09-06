@@ -495,14 +495,14 @@ Console 4 - Struttura del progetto
 
 Prima di eseguire le collection con Postman CLI, è importante assicurarsi che tutte le configurazioni siano corrette e che i certificati siano stati generati e posizionati nei percorsi appropriati.
 
-> **Importante**: ricordare di avviare il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) in modo che le API siano raggiungibili. Qui [Running the application in dev mode](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#running-the-application-in-dev-mode) è indicato come fare; in ogni caso ecco come procedere.
+> **Importante**: ricordiamo di avviare il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) in modo che le API siano raggiungibili e in listen sulla porta 8443 (che abbiamo configurato per gli ambienti local e test). Qui su [Quickstart](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart) è indicato come fare, usando docker o podman; in ogni caso ecco come procedere.
 >
 > ```shell
-> # Cloniamo il repository
-> git clone https://github.com/amusarra/quarkus-mtls-auth.git
-> cd quarkus-mtls-auth
-> # Avvio del progetto in modalità dev
-> ./mvnw quarkus:dev
+> # Pull the latest image from Docker Hub
+> podman pull amusarra/quarkus-mtls-auth:latest
+>
+> # Run the container
+> podman run -p 8443:8443 amusarra/quarkus-mtls-auth:latest
 > ```
 
 Per eseguire le collection con Postman CLI, si utilizza il comando `postman collection run` specificando il percorso della collection, il file di ambiente tramite l'opzione `--environment`, il file di configurazione dei certificati tramite l'opzione `--ssl-client-cert-list`.
@@ -629,13 +629,24 @@ L'automazione dei test mTLS tramite Postman CLI può essere facilmente integrata
 Di seguito un esempio di step che esegue una collection Postman e verifica il risultato tramite l'exit code:
 
 ```yaml
-- name: Esegui test mTLS con Postman CLI
+...
+- name: Install Postman CLI
+  run: |
+    curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+- name: Run Postman Collection and Generate Report for local environment
   run: |
     postman collection run collections/quarkus-mtls-collection-with-test.json \
-      --environment config/environments/test.json \
-      --ssl-client-cert-list config/certificates/client-certificates.json \
-      --ssl-extra-ca-certs certificates/ca/ca_cert.pem
+    --environment config/environments/local.json \
+    --ssl-client-cert-list config/certificates/client-certificates.json \
+    --ssl-extra-ca-certs certificates/ca/ca_cert.pem \
+    --verbose \
+    --reporters html,cli \
+    --reporter-html-export postman_report_local.html
+...
 ```
+
+GitHub Actions 1 - Esempio di step per installare ed eseguire Postman CLI
 
 Se uno o più test falliscono, lo step viene marcato come failed e la pipeline si interrompe, garantendo che solo il codice che supera tutti i test venga distribuito.
 
@@ -646,19 +657,24 @@ Se uno o più test falliscono, lo step viene marcato come failed e la pipeline s
 - **Reportistica**: è possibile esportare report HTML e allegarli agli artefatti della pipeline per una consultazione rapida.
 - **Sicurezza**: si garantisce che le API protette da mTLS siano sempre testate e funzionanti prima della messa in produzione.
 
-Questa integrazione rende il processo di validazione delle API mTLS robusto, ripetibile e adatto a team DevOps e sviluppo moderno.
+Per esempio, l'immagine seguente mostra un esempio di esecuzione di Postman CLI all'interno di una GitHub Actions e in particolare la pagina del summary, dov'è possibile leggere il testo di riepilogo e gli artefatti generati, che in questo caso sono i report HTML. Questa integrazione rende il processo di validazione delle API mTLS robusto, ripetibile e adatto a team DevOps e sviluppo moderno.
+
+
+![Esecuzione di Postman CLI in GitHub Actions - Summary](./resources/images/github_action_artifact_and_summary.jpg)
+
+Figura 5 - Esecuzione di Postman CLI in GitHub Actions - Summary
 
 <div style="page-break-after: always; break-after: page;"></div>
 
-Di seguito un esempio di report HTML generato da Postman CLI con l'opzione `--reporters html`.
+Di seguito un esempio di report HTML generato da Postman CLI usando l'opzione `--reporters html`.
 
 ![Esempio di report HTML generato da Postman CLI - Summary](./resources/images/postman_cli_html_report_overview.jpg)
 
-Figura 5 - Report HTML generato da Postman CLI - Summary
+Figura 6 - Report HTML generato da Postman CLI - Summary
 
 ![Esempio di report HTML generato da Postman CLI - Dettaglio richieste](./resources/images/postman_cli_html_report_detail_request_1.jpg)
 
-Figura 5 - Report HTML generato da Postman CLI - Dettaglio richieste
+Figura 7 - Report HTML generato da Postman CLI - Dettaglio richieste
 
 Questo report mostra in modo grafico e dettagliato lo stato delle richieste, i test eseguiti, le asserzioni superate e fallite, i tempi di risposta e tutte le informazioni utili per la validazione automatica delle API mTLS.
 
@@ -686,4 +702,25 @@ Questi strumenti e procedure ci permettono di automatizzare e rendere ripetibile
 Trovi l'intero progetto pronto all'uso su GitHub:  
 👉 [https://github.com/amusarra/postman-mtls](https://github.com/amusarra/postman-mtls)
 
-Nel repository troverai tutte le configurazioni, gli script, le collection Postman e i certificati di esempio descritti in questa guida.
+Nel repository troverai tutte le configurazioni, gli script, le collection Postman, i certificati di esempio, la GitHub Actions di esempio e molto altro. Puoi clonare il progetto, adattarlo alle tue esigenze e iniziare subito a testare API protette da mTLS con Postman CLI.
+
+## Risorse utili
+
+Ecco una raccolta di risorse e riferimenti utili per approfondire i temi trattati nella guida:
+
+- [Mutual TLS (Wikipedia)](https://en.wikipedia.org/wiki/Mutual_authentication)
+- [Certificate Authority (Wikipedia)](https://en.wikipedia.org/wiki/Certificate_authority)
+- [Privacy Enhanced Mail (PEM)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
+- [Documentazione ufficiale Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-overview/)
+- [Installazione Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-installation/)
+- [Gestione ambienti in Postman](https://learning.postman.com/docs/sending-requests/variables/managing-environments/)
+- [Gestione certificati in Postman](https://learning.postman.com/docs/sending-requests/authorization/certificates/)
+- [Scrivere test in Postman](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/)
+- [Report con Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-reporters/)
+- [Quickstart quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart)
+- [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/)
+- [Repository di esempio: postman-mtls](https://github.com/amusarra/postman-mtls)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Debug TLS/SSL con OpenSSL](https://www.openssl.org/docs/manmaster/man1/openssl-s_client.html)
+
+Queste risorse ti aiuteranno ad approfondire la configurazione, l'automazione e il troubleshooting di mTLS e Postman CLI.
