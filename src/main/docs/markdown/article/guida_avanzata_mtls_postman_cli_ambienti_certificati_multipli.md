@@ -8,16 +8,17 @@ lang: it
 layout: article
 slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
 date: "2025-09-02"
-version: "1.0.0"
+version: "1.0.1"
 scope: Public
 state: Released
 ---
 
 ## Cronologia delle revisioni
 
-| Versione | Data       | Autore          | Descrizione delle Modifiche                                                             |
-|:---------|:-----------|:----------------|:----------------------------------------------------------------------------------------|
-| 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release                                                                           |
+| Versione | Data       | Autore          | Descrizione delle Modifiche |
+| :------- | :--------- | :-------------- | :-------------------------- |
+| 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release               |
+| 1.0.1    | 2025-09-07 | Antonio Musarra | Minor fix e miglioramenti   |
 
 [TOC]
 
