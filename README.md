@@ -126,6 +126,44 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
+## Requirement for build
+
+To build this project successfully, you need the following requirements:
+
+- **Java Development Kit (JDK) 21**  
+  The project is based on Quarkus and requires at least JDK 21. You can use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.org/).
+- **Maven 3.9.x**  
+  The build is managed with Maven. Make sure you have Maven 3.9.x installed. You can use the included `mvnw` wrapper if you don't want to install Maven globally.
+- **OpenSSL >= 3.0.7**  
+  Some build steps (especially certificate generation and native builds) require OpenSSL version 3.0.7 or newer.  
+  You can check your version with:
+
+  ```shell
+  openssl version
+  ```
+
+  If your system does not provide a recent enough version, consider using a container image or updating your OS packages.
+- **xmlstarlet >= 1.6.x**  
+  Required for XML processing in some scripts.  
+  You can check your version with:
+  
+  ```shell
+  xmlstarlet --version
+  ```
+
+- **Bash >= 5**  
+  Some scripts require Bash version 5 or newer.  
+  You can check your version with:
+
+  ```shell
+  bash --version
+  ```
+
+- **GNU/Linux, macOS, or Windows**  
+  The project is cross-platform, but for scripting and automation (certificate generation, etc.) a Unix-like environment is recommended.
+- **Docker or Podman (optional)**  
+  Required only if you want to build and run the container images or use native builds in containers.
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
@@ -189,7 +227,7 @@ The application, packaged as an _über-jar_, is now runnable using `java -jar ta
 ## Creating a native executable
 
 In this case, to create a native executable, with the support of SSL/TLS, you need read the [Using SSL With Native Executables](https://quarkus.io/guides/native-and-ssl) guide first and then you can create a native executable.
- 
+
 You can create a native executable using:
 
 ```shell script
@@ -205,6 +243,25 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./target/tls-mutual-auth-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Quickstart
+
+If you are curious and want to see the application running immediately, you can use the pre-built container image available on Docker Hub. This allows you to test the application without building it locally.
+
+```shell
+# Pull the latest image from Docker Hub
+docker pull amusarra/quarkus-mtls-auth:latest
+
+# Run the container
+docker run -p 8443:8443 amusarra/quarkus-mtls-auth:latest
+```
+
+You can also use Podman, which is a drop-in replacement for Docker. Just replace `docker` with `podman` in the commands above.
+
+The application will be available on `https://localhost:8443`.  
+Remember to accept the self-signed certificate in your browser or API client.
+
+For more details on available tags and usage, visit [Docker Hub](https://hub.docker.com/r/amusarra/quarkus-mtls-auth).
 
 ## Related Guides
 
