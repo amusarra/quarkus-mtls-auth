@@ -718,19 +718,36 @@ Nel repository troverai tutte le configurazioni, gli script, le collection Postm
 
 Ecco una raccolta di risorse e riferimenti utili per approfondire i temi trattati nella guida:
 
-- [Mutual TLS (Wikipedia)](https://en.wikipedia.org/wiki/Mutual_authentication)
-- [Certificate Authority (Wikipedia)](https://en.wikipedia.org/wiki/Certificate_authority)
-- [Privacy Enhanced Mail (PEM)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
+### Postman
+
 - [Documentazione ufficiale Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-overview/)
 - [Installazione Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-installation/)
 - [Gestione ambienti in Postman](https://learning.postman.com/docs/sending-requests/variables/managing-environments/)
 - [Gestione certificati in Postman](https://learning.postman.com/docs/sending-requests/authorization/certificates/)
 - [Scrivere test in Postman](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/)
 - [Report con Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-reporters/)
+
+### GitHub
+
 - [Quickstart quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart)
-- [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/)
 - [Repository di esempio: postman-mtls](https://github.com/amusarra/postman-mtls)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+### Articoli e Guide
+
+- [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+- [Autenticazione mTLS con Quarkus](https://open.spotify.com/episode/1vbl5exIO4m8Cekw9vwLeZ?si=a794bebee20c42a8) - pubblicato sul podcast di Antonio Musarra
+- [Liferay 7.2: Esempio di Two-Way SSL/TLS Mutual Authentication Client](https://www.dontesta.it/2020/02/25/liferay-7-2-esempio-di-two-way-ssl-tls-mutual-authentication-client/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+- [RabbitMQ 4.1 mTLS e AMQP 1.0: Guida essenziale per sviluppatori](https://www.dontesta.it/2025/05/18/rabbitmq-4-1-mtls-e-amqp-1-0-guida-essenziale-per-sviluppatori/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+
+### Wikipedia
+
+- [Mutual TLS (Wikipedia)](https://en.wikipedia.org/wiki/Mutual_authentication)
+- [Certificate Authority (Wikipedia)](https://en.wikipedia.org/wiki/Certificate_authority)
+- [Privacy Enhanced Mail (PEM)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
+
+### Altre Risorse
+
 - [Debug TLS/SSL con OpenSSL](https://www.openssl.org/docs/manmaster/man1/openssl-s_client.html)
 
 Queste risorse ti aiuteranno ad approfondire la configurazione, l'automazione e il troubleshooting di mTLS e Postman CLI.
