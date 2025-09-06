@@ -7,17 +7,18 @@ keywords: [mtls, tls, security, postman, api, cli, certificate, ssl]
 lang: it
 layout: article
 slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
-date: "2025-09-02"
-version: "1.0.0"
+date: "2025-09-07"
+version: "1.0.1"
 scope: Public
 state: Released
 ---
 
 ## Cronologia delle revisioni
 
-| Versione | Data       | Autore          | Descrizione delle Modifiche                                                             |
-|:---------|:-----------|:----------------|:----------------------------------------------------------------------------------------|
-| 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release                                                                           |
+| Versione | Data       | Autore          | Descrizione delle Modifiche |
+| :------- | :--------- | :-------------- | :-------------------------- |
+| 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release               |
+| 1.0.1    | 2025-09-07 | Antonio Musarra | Minor fix e miglioramenti   |
 
 [TOC]
 
@@ -36,17 +37,15 @@ La documentazione ufficiale di Postman CLI non fornisce informazioni dettagliate
 
 Per seguire questa guida, assicuriamoci di avere:
 
-- [Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-installation/) installato sull'ambiente di esecuzione;
+- [Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-installation/) installato sull'ambiente di esecuzione. Versione minima consigliata: 1.18.0, poiché alcune funzionalità potrebbero non essere disponibili nelle versioni precedenti;
 - un progetto con endpoint protetti da mTLS, come per esempio [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth);
-- certificati client e CA ([Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority)) necessari per l'autenticazione mTLS;
+- certificati client e CA ([Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority)) necessari per l'autenticazione mTLS.
 
 > Il login su Postman non è necessario per eseguire collection locali come in questo esempio, ma è richiesto nel caso in cui si voglia sincronizzare collection, ambienti o cronologia con il cloud di Postman.
 
-Per quanto riguarda la versione di Postman CLI, assicuriamoci di utilizzare almeno la versione 1.18.0, poiché le funzionalità descritte in questa guida potrebbero non essere disponibili nelle versioni precedenti.
+Il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) offre un'implementazione di API REST protette dal meccanismo di sicurezza mTLS, che utilizzeremo per dimostrare la configurazione di Postman CLI. Quanto descritto in questa guida è applicabile a qualsiasi altro progetto e/o scenario simile.
 
-Il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) fornisce un'implementazione di API REST protette dal meccanismo di sicurezza mTLS e che utilizzeremo per dimostrare la configurazione di Postman CLI. Quanto spiegato in questa guida è applicabile a qualunque altro progetto e/o scenario simile.
-
-Per quanto riguarda i certificati client e CA, vedremo in seguito come generarli e configurarli correttamente in Postman CLI. La versione CLI al contrario della versione Desktop, supporta al momento solo certificati in formato PEM ([Privacy Enhanced Mail](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)).
+Per quanto riguarda i certificati client e CA, esploreremo in seguito come generarli e configurarli correttamente in Postman CLI. La versione CLI, a differenza della versione Desktop, attualmente supporta solo certificati in formato PEM ([Privacy Enhanced Mail](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)).
 
 Non ci sono restrizioni particolari riguardo il sistema operativo utilizzato, puoi seguire questa guida su Windows, macOS o Linux senza problemi. Per garantire la massima compatibilità, consiglio di utilizzare un terminale con supporto per i comandi Unix/Linux.
 
@@ -102,9 +101,7 @@ Console 2 - Verifica della struttura delle cartelle (uso del comando `tree`)
 
 Usare le [variabili d'ambiente in Postman](https://learning.postman.com/docs/sending-requests/variables/managing-environments/) è fondamentale per gestire configurazioni diverse senza modificare manualmente le richieste. Le variabili possono essere utilizzate per memorizzare valori come URL, token di accesso e certificati.
 
-Per il nostro esempio, creeremo due ambienti: uno per lo sviluppo locale e un altro per l'ambiente di test. Ogni ambiente conterrà variabili specifiche per URL dei servizi e path dei servizi.
-
-Vediamo quali sono le variabili che andremo a definire:
+Per il nostro esempio, creeremo due ambienti: uno per lo sviluppo locale e un altro per l'ambiente di test. Vediamo quali sono le variabili che andremo a definire:
 
 - `base_url`: l'URL di base del servizio. Questa variabile avrà un valore differente per ogni ambiente;
 - `api_connection_info_path`: il path dell'API per le informazioni di connessione;
@@ -230,11 +227,11 @@ Una volta creati i file di configurazione per gli ambienti, possiamo procedere c
 
 La configurazione dei certificati client in Postman CLI è un passaggio cruciale per l'autenticazione mTLS. A differenza della versione Desktop di Postman, che consente di [configurare i certificati tramite l'interfaccia grafica](https://learning.postman.com/docs/sending-requests/authorization/certificates/), la CLI richiede l'uso di file di configurazione JSON.
 
-Per gestire più certificati client in modo centralizzato, creeremo un file di configurazione dedicato ai certificati. Questo file conterrà le informazioni necessarie per ogni certificato, inclusi i percorsi dei file PEM per il certificato, la chiave privata e la relativa passphrase.
+Per gestire più certificati client in modo centralizzato, creeremo un file di configurazione adatto allo scopo. Questo file conterrà le informazioni necessarie per ogni certificato, inclusi i percorsi dei file PEM per il certificato e la chiave privata, compresa la relativa passphrase.
 
 Chiameremo questo file di configurazione `client-certificates.json` e lo posizioneremo nella cartella `postman-mtls/config/certificates`.
 
-A seguire l'esempio di configurazione per i certificati client. In questo caso, abbiamo configurato due certificati, sia per l'ambiente locale che per l'ambiente di test.
+A seguire l'esempio di configurazione per i certificati client. In questo caso, abbiamo configurato due certificati, sia per l'ambiente locale che per l'ambiente di test. Questa configurazione è solo un esempio e può essere adattata in base alle esigenze specifiche.
 
 ```json
 [
@@ -271,7 +268,7 @@ A seguire l'esempio di configurazione per i certificati client. In questo caso, 
 
 Config. 3 - Configurazione dei certificati client per mTLS.
 
-Visto che il progetto su cui eseguiremo i test è [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth), utilizzeremo dei certificati accettati dai servizi REST implementati su questo progetto. I certificati indicati sono stati generati ad hoc per il testing attraverso un apposito script.
+Poiché il progetto su cui eseguiremo i test è [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth), utilizzeremo certificati accettati dai servizi REST implementati in questo progetto. I certificati indicati sono stati generati appositamente per il testing tramite uno script specifico.
 
 Per maggiori informazioni su come sono stati generati i certificati client, fare riferimento all'articolo [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/) e in particolare al capitolo **Step 10 - Generazione di un set di certificati client per eseguire dei test di accesso**.
 
@@ -292,11 +289,11 @@ Per maggiori dettagli fare riferimento ad [Add and manage CA and client certific
 
 <div style="page-break-after: always; break-after: page;"></div>
 
-## Creazione della collezione Postman
+## Creazione della collection Postman
 
 A questo punto possiamo creare la nostra collection Postman contenente le richieste necessarie per interagire con le API protette da mTLS, che in questo caso sono due: `/api/v1/connection-info/info`e `/api/v1/connection-info/user-identity`. La prima API restituisce informazioni sulla connessione, mentre la seconda fornisce dettagli sull'identità dell'utente.
 
-Creiamo quindi un file JSON per la nostra collection salvandolo all'interno della cartella `postman-mtls/collections`, a cui assegnamo il nome `quarkus-mtls-collection.json` il cui contenuto è mostrato di seguito.
+Procediamo ora con la creazione del file JSON della collection, che salveremo nella cartella `postman-mtls/collections` con il nome `quarkus-mtls-collection.json`. Di seguito è riportato il contenuto del file.
 
 ```json
 {
@@ -344,7 +341,7 @@ Config. 4 - Creazione della collezione Postman per mTLS.
 
 All'interno della collection abbiamo utilizzato le variabili definite nell'ambiente, come per esempio `base_url`, `api_connection_info_path` e `api_connection_user_identity`.
 
-Potremmo però pensare di rendere la collection **più utile ai fini del testing automatizzato**, ad esempio, aggiungendo dei **test alle richieste**. Aggiungeremo quindi, l'esecuzione di un set di test diversi in base all'ambiente. La tabella seguente riassume i test che vogliamo siano eseguiti per ogni richiesta in base all'ambiente attivo.
+Vogliamo rendere la nostra collection ancora più "smart" per il testing automatizzato! Per farlo, aggiungeremo dei test alle richieste, così ogni ambiente avrà i suoi controlli dedicati. Immagina: ogni volta che lanci la collection, Postman CLI si trasforma in un vero e proprio "detective" delle API, pronto a scovare errori e confermare che tutto funzioni come previsto. La tabella qui sotto mostra quali test saranno eseguiti per ogni richiesta, a seconda dell'ambiente attivo. Pronti a scoprire chi supera l’esame?
 
 | Richiesta                        | Ambiente | Test eseguiti                                                                                           |
 |-----------------------------------|----------|---------------------------------------------------------------------------------------------------------|
@@ -354,6 +351,19 @@ Potremmo però pensare di rendere la collection **più utile ai fini del testing
 | connection-info/user-identity     | test     | - Status code = 401                                                                                     |
 
 Tabella 2 - Test automatizzati per ogni richiesta e ambiente
+
+> **Perché i test sono diversi tra gli ambienti?**
+>
+> Un'attenta osservazione della Tabella 2 rivela che i test per la stessa API cambiano a seconda dell'ambiente. Qualcuno potrebbe giustamente obiettare: "I test non dovrebbero essere identici?"
+>
+> L'obiezione è valida, ma in questo contesto la differenza è **intenzionale e strategica**. Non stiamo solo verificando che l'API "funzioni", ma stiamo validando **scenari di autorizzazione specifici** legati ai diversi certificati client usati in ogni ambiente.
+>
+> Come descritto nella configurazione dei certificati (`Config. 3`), ogni ambiente associa certificati client differenti alle API. Di conseguenza:
+>
+> - **Ambiente `local`**: Per l'API `connection-info/info`, ci aspettiamo un `403 Forbidden`. Questo è un test di sicurezza "negativo": verifichiamo che un client autenticato ma **non autorizzato** venga correttamente respinto.
+> - **Ambiente `test`**: Per la stessa API, ci aspettiamo un `200 OK`. Questo è un test "positivo": verifichiamo che un client con un certificato diverso e **autorizzato** ottenga l'accesso.
+>
+> In sintesi, sfruttiamo gli ambienti per simulare diversi profili di accesso e garantire che le regole di autorizzazione basate sui certificati siano implementate correttamente. Questo approccio rende la suite di test molto più robusta, coprendo sia i percorsi di successo che quelli di fallimento attesi.
 
 Con riferimento alla tabella precedente, possiamo ora implementare i test all'interno della nostra collezione Postman. A seguire la nuova collection a cui daremo il nome `quarkus-mtls-collection-with-test.json` e posizioneremo sempre in `postman-mtls/collections`.
 
@@ -457,7 +467,7 @@ La sezione "event" di ogni richiesta conterrà gli script per l'esecuzione dei t
 
 Config. 5 - Aggiunta di test alla collection Postman
 
-Adesso che abbiamo creato le configurazioni necessarie (ambiente e certificati), creato le collection Postman senza test e con test, possiamo procedere con l'esecuzione delle collection.
+Ottimo lavoro! Ora che tutte le configurazioni sono pronte (ambienti, certificati e collection Postman sia con che senza test), siamo davvero a un passo dall'esecuzione pratica delle collection. Manca solo l’ultimo step: vedere tutto in azione!
 
 <div style="page-break-after: always; break-after: page;"></div>
 
@@ -495,13 +505,14 @@ Console 4 - Struttura del progetto
 
 Prima di eseguire le collection con Postman CLI, è importante assicurarsi che tutte le configurazioni siano corrette e che i certificati siano stati generati e posizionati nei percorsi appropriati.
 
-> **Importante**: ricordiamo di avviare il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) in modo che le API siano raggiungibili e in listen sulla porta 8443 (che abbiamo configurato per gli ambienti local e test). Qui su [Quickstart](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart) è indicato come fare, usando docker o podman; in ogni caso ecco come procedere.
+> **Importante**: prima di eseguire i test, assicurati che il progetto [quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth) sia avviato e che le API siano in ascolto sulla porta 8443 (come configurato negli ambienti local e test).  
+> Puoi trovare le istruzioni dettagliate nella sezione [Quickstart](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart) del repository, dove viene spiegato come avviare il servizio tramite Docker o Podman. Ecco un esempio pratico:
 >
 > ```shell
-> # Pull the latest image from Docker Hub
+> # Scarica l'immagine aggiornata da Docker Hub
 > podman pull amusarra/quarkus-mtls-auth:latest
 >
-> # Run the container
+> # Avvia il container sulla porta 8443
 > podman run -p 8443:8443 amusarra/quarkus-mtls-auth:latest
 > ```
 
@@ -592,7 +603,7 @@ Queste schermate aiutano a diagnosticare rapidamente i motivi del fallimento dei
 
 <div style="page-break-after: always; break-after: page;"></div>
 
-## Verifica del buon fine tramite exit code
+## Verifica tramite exit code
 
 Quando si esegue una collection con Postman CLI, il comando restituisce un **exit code** che permette di verificare rapidamente se l'esecuzione è andata a buon fine:
 
@@ -657,8 +668,7 @@ Se uno o più test falliscono, lo step viene marcato come failed e la pipeline s
 - **Reportistica**: è possibile esportare report HTML e allegarli agli artefatti della pipeline per una consultazione rapida.
 - **Sicurezza**: si garantisce che le API protette da mTLS siano sempre testate e funzionanti prima della messa in produzione.
 
-Per esempio, l'immagine seguente mostra un esempio di esecuzione di Postman CLI all'interno di una GitHub Actions e in particolare la pagina del summary, dov'è possibile leggere il testo di riepilogo e gli artefatti generati, che in questo caso sono i report HTML. Questa integrazione rende il processo di validazione delle API mTLS robusto, ripetibile e adatto a team DevOps e sviluppo moderno.
-
+L'immagine seguente mostra l'esecuzione di Postman CLI in una GitHub Actions, con il riepilogo dei risultati e i report HTML generati come artefatti. Questa integrazione semplifica e automatizza la validazione delle API mTLS nei workflow DevOps.
 
 ![Esecuzione di Postman CLI in GitHub Actions - Summary](./resources/images/github_action_artifact_and_summary.jpg)
 
@@ -708,19 +718,36 @@ Nel repository troverai tutte le configurazioni, gli script, le collection Postm
 
 Ecco una raccolta di risorse e riferimenti utili per approfondire i temi trattati nella guida:
 
-- [Mutual TLS (Wikipedia)](https://en.wikipedia.org/wiki/Mutual_authentication)
-- [Certificate Authority (Wikipedia)](https://en.wikipedia.org/wiki/Certificate_authority)
-- [Privacy Enhanced Mail (PEM)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
+### Postman
+
 - [Documentazione ufficiale Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-overview/)
 - [Installazione Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-installation/)
 - [Gestione ambienti in Postman](https://learning.postman.com/docs/sending-requests/variables/managing-environments/)
 - [Gestione certificati in Postman](https://learning.postman.com/docs/sending-requests/authorization/certificates/)
 - [Scrivere test in Postman](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/)
 - [Report con Postman CLI](https://learning.postman.com/docs/postman-cli/postman-cli-reporters/)
+
+### GitHub
+
 - [Quickstart quarkus-mtls-auth](https://github.com/amusarra/quarkus-mtls-auth?tab=readme-ov-file#quickstart)
-- [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/)
 - [Repository di esempio: postman-mtls](https://github.com/amusarra/postman-mtls)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+### Articoli e Guide
+
+- [Implementazione di TLS Mutual Authentication (mTLS) con Quarkus](https://www.dontesta.it/2024/09/19/implementazione-tls-mutual-authentication-mtls-con-quarkus/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+- [Autenticazione mTLS con Quarkus](https://open.spotify.com/episode/1vbl5exIO4m8Cekw9vwLeZ?si=a794bebee20c42a8) - pubblicato sul podcast di Antonio Musarra
+- [Liferay 7.2: Esempio di Two-Way SSL/TLS Mutual Authentication Client](https://www.dontesta.it/2020/02/25/liferay-7-2-esempio-di-two-way-ssl-tls-mutual-authentication-client/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+- [RabbitMQ 4.1 mTLS e AMQP 1.0: Guida essenziale per sviluppatori](https://www.dontesta.it/2025/05/18/rabbitmq-4-1-mtls-e-amqp-1-0-guida-essenziale-per-sviluppatori/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+
+### Wikipedia
+
+- [Mutual TLS (Wikipedia)](https://en.wikipedia.org/wiki/Mutual_authentication)
+- [Certificate Authority (Wikipedia)](https://en.wikipedia.org/wiki/Certificate_authority)
+- [Privacy Enhanced Mail (PEM)](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail)
+
+### Altre Risorse
+
 - [Debug TLS/SSL con OpenSSL](https://www.openssl.org/docs/manmaster/man1/openssl-s_client.html)
 
 Queste risorse ti aiuteranno ad approfondire la configurazione, l'automazione e il troubleshooting di mTLS e Postman CLI.
