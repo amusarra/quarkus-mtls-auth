@@ -271,7 +271,6 @@ main() {
   fi
 
   check_bash_version
-  check_zsh_version
   check_keytool_installed
   check_xmlstarlet_installed
   check_curl_installed
