@@ -1,0 +1,6 @@
+[ req ]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+[ req_distinguished_name ]
+[ v3_req ]
+subjectAltName = DNS:admin.quarkus.dontesta.it,DNS:blog.quarkus.dontesta.it,DNS:*.apps.rm2.thpm.p1.openshiftapps.com,DNS:localhost
