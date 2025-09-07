@@ -8,7 +8,7 @@ lang: it
 layout: article
 slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
 date: "2025-09-07"
-version: "1.0.1"
+version: "1.0.2"
 scope: Public
 state: Released
 ---
@@ -18,7 +18,8 @@ state: Released
 | Versione | Data       | Autore          | Descrizione delle Modifiche |
 | :------- | :--------- | :-------------- | :-------------------------- |
 | 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release               |
-| 1.0.1    | 2025-09-07 | Antonio Musarra | Minor fix e miglioramenti   |
+| 1.0.1    | 2025-09-06 | Antonio Musarra | Minor fix e miglioramenti   |
+| 1.0.2    | 2025-09-07 | Antonio Musarra | Minor fix, aggiunta di note e nuovo capitolo   |
 
 [TOC]
 
@@ -356,14 +357,14 @@ Tabella 2 - Test automatizzati per ogni richiesta e ambiente
 >
 > Un'attenta osservazione della Tabella 2 rivela che i test per la stessa API cambiano a seconda dell'ambiente. Qualcuno potrebbe giustamente obiettare: "I test non dovrebbero essere identici?"
 >
-> L'obiezione è valida, ma in questo contesto la differenza è **intenzionale e strategica**. Non stiamo solo verificando che l'API "funzioni", ma stiamo validando **scenari di autorizzazione specifici** legati ai diversi certificati client usati in ogni ambiente.
+> L'obiezione è assolutamente valida, ma in questo contesto la differenza è **intenzionale e strategica**. Non stiamo solo verificando che l'API "funzioni", ma stiamo validando **scenari di autorizzazione specifici** legati ai diversi certificati client usati in ogni ambiente.
 >
 > Come descritto nella configurazione dei certificati (`Config. 3`), ogni ambiente associa certificati client differenti alle API. Di conseguenza:
 >
 > - **Ambiente `local`**: Per l'API `connection-info/info`, ci aspettiamo un `403 Forbidden`. Questo è un test di sicurezza "negativo": verifichiamo che un client autenticato ma **non autorizzato** venga correttamente respinto.
 > - **Ambiente `test`**: Per la stessa API, ci aspettiamo un `200 OK`. Questo è un test "positivo": verifichiamo che un client con un certificato diverso e **autorizzato** ottenga l'accesso.
 >
-> In sintesi, sfruttiamo gli ambienti per simulare diversi profili di accesso e garantire che le regole di autorizzazione basate sui certificati siano implementate correttamente. Questo approccio rende la suite di test molto più robusta, coprendo sia i percorsi di successo che quelli di fallimento attesi.
+> In sintesi, sfruttiamo gli ambienti per simulare diversi profili di accesso e garantire che le regole di autorizzazione basate sui certificati siano implementate correttamente. Questo approccio va usato con le dovute considerazioni, ma in questo caso specifico è perfettamente giustificato.
 
 Con riferimento alla tabella precedente, possiamo ora implementare i test all'interno della nostra collezione Postman. A seguire la nuova collection a cui daremo il nome `quarkus-mtls-collection-with-test.json` e posizioneremo sempre in `postman-mtls/collections`.
 
@@ -660,6 +661,8 @@ Di seguito un esempio di step che esegue una collection Postman e verifica il ri
 GitHub Actions 1 - Esempio di step per installare ed eseguire Postman CLI
 
 Se uno o più test falliscono, lo step viene marcato come failed e la pipeline si interrompe, garantendo che solo il codice che supera tutti i test venga distribuito.
+
+<div style="page-break-after: always; break-after: page;"></div>
 
 ### Quando l'errore è il nostro migliore amico
 
