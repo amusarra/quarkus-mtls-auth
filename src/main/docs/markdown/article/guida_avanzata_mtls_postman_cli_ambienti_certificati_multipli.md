@@ -661,6 +661,19 @@ GitHub Actions 1 - Esempio di step per installare ed eseguire Postman CLI
 
 Se uno o più test falliscono, lo step viene marcato come failed e la pipeline si interrompe, garantendo che solo il codice che supera tutti i test venga distribuito.
 
+### Quando l'errore è il nostro migliore amico
+
+Ecco il bello dell'automazione: quando la GitHub Action fallisce, come mostrato nell'immagine a seguire, non è solo una "X" rossa che ci fa storcere il naso. In realtà, quell'errore è stato fondamentale: ci ha subito segnalato che il certificato del servizio (REST API) era scaduto e che le richieste mTLS non potevano andare a buon fine. Meglio scoprirlo ora, in fase di test, che in produzione davanti agli utenti!
+
+![GitHub Action fallita a causa di certificato scaduto](./resources/images/github_action_failed_due_to_expired_certificate.jpg)
+
+Figura 5 - GitHub Action fallita a causa di certificato scaduto
+
+Insomma, il fallimento della pipeline è stato un vero alleato: ci ha permesso di intervenire tempestivamente, aggiornare i certificati e garantire la sicurezza e l'affidabilità del servizio. Ricorda: ogni errore ben evidenziato è un passo avanti verso un sistema più robusto!
+
+> Probabilmente senza questi test automatici non mi sarei mai accorto del certificato scaduto e avrei pubblicato la guida con un bel bug, lasciando il lettore a chiedersi perché non funzionasse nulla!  
+> Ecco perché i test sono i veri supereroi delle guide tecniche: ti salvano la reputazione prima ancora che tu premi "pubblica"! 😄
+
 ### Vantaggi dell'integrazione
 
 - **Automazione completa**: i test mTLS vengono eseguiti automaticamente ad ogni commit, merge o rilascio.
@@ -672,7 +685,7 @@ L'immagine seguente mostra l'esecuzione di Postman CLI in una GitHub Actions, co
 
 ![Esecuzione di Postman CLI in GitHub Actions - Summary](./resources/images/github_action_artifact_and_summary.jpg)
 
-Figura 5 - Esecuzione di Postman CLI in GitHub Actions - Summary
+Figura 6 - Esecuzione di Postman CLI in GitHub Actions - Summary
 
 <div style="page-break-after: always; break-after: page;"></div>
 
@@ -680,11 +693,11 @@ Di seguito un esempio di report HTML generato da Postman CLI usando l'opzione `-
 
 ![Esempio di report HTML generato da Postman CLI - Summary](./resources/images/postman_cli_html_report_overview.jpg)
 
-Figura 6 - Report HTML generato da Postman CLI - Summary
+Figura 7 - Report HTML generato da Postman CLI - Summary
 
 ![Esempio di report HTML generato da Postman CLI - Dettaglio richieste](./resources/images/postman_cli_html_report_detail_request_1.jpg)
 
-Figura 7 - Report HTML generato da Postman CLI - Dettaglio richieste
+Figura 8 - Report HTML generato da Postman CLI - Dettaglio richieste
 
 Questo report mostra in modo grafico e dettagliato lo stato delle richieste, i test eseguiti, le asserzioni superate e fallite, i tempi di risposta e tutte le informazioni utili per la validazione automatica delle API mTLS.
 
