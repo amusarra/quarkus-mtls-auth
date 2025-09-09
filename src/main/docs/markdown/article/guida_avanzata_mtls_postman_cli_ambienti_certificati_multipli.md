@@ -21,7 +21,7 @@ state: Released
 | 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release               |
 | 1.0.1    | 2025-09-06 | Antonio Musarra | Minor fix e miglioramenti   |
 | 1.0.2    | 2025-09-07 | Antonio Musarra | Minor fix, aggiunta di note e nuovo capitolo   |
-| 1.0.3    | 2025-09-09 | Antonio Musarra | Aggiunta sezione su alternative a Postman CLI  |
+| 1.0.3    | 2025-09-09 | Antonio Musarra | Aggiunta sezione su alternative a Postman CLI e URL dell'articolo pubblicato sul blog  |
 
 [TOC]
 
@@ -35,6 +35,10 @@ La documentazione ufficiale di Postman CLI non fornisce informazioni dettagliate
 
 > **Segui la guida fino in fondo!**  
 > Alla fine troverai un bonus: il link al repository GitHub che contiene l'intero progetto pronto all'uso, con tutte le configurazioni, gli script e le collection Postman illustrate in questo articolo.
+
+---
+
+> **Nota:** Puoi leggere questo articolo anche direttamente dal blog all'indirizzo: [https://www.dontesta.it/2025/09/09/guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli/](https://www.dontesta.it/2025/09/09/guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli/)
 
 ## Prerequisiti
 
