@@ -6,6 +6,7 @@ subject: "Guida Avanzata: mTLS con Postman CLI, Ambienti e Certificati Multipli"
 keywords: [mtls, tls, security, postman, api, cli, certificate, ssl]
 lang: it
 layout: article
+url: "https://www.dontesta.it/2025/09/09/guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli/"
 slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
 date: "2025-09-09"
 version: "1.0.3"
