@@ -7,8 +7,8 @@ keywords: [mtls, tls, security, postman, api, cli, certificate, ssl]
 lang: it
 layout: article
 slug: "guida-avanzata-mtls-con-postman-cli-ambienti-e-certificati-multipli"
-date: "2025-09-07"
-version: "1.0.2"
+date: "2025-09-09"
+version: "1.0.3"
 scope: Public
 state: Released
 ---
@@ -20,6 +20,7 @@ state: Released
 | 1.0.0    | 2025-09-02 | Antonio Musarra | Prima release               |
 | 1.0.1    | 2025-09-06 | Antonio Musarra | Minor fix e miglioramenti   |
 | 1.0.2    | 2025-09-07 | Antonio Musarra | Minor fix, aggiunta di note e nuovo capitolo   |
+| 1.0.3    | 2025-09-09 | Antonio Musarra | Aggiunta sezione su alternative a Postman CLI  |
 
 [TOC]
 
@@ -721,6 +722,10 @@ Abbiamo imparato a:
 
 Questi strumenti e procedure ci permettono di automatizzare e rendere ripetibile la validazione di API protette da mTLS, migliorando la produttività e la robustezza dei processi di sviluppo e delivery.
 
+> **Curiosità:** Postman è sicuramente uno degli strumenti più diffusi per il testing delle API, ma il panorama offre anche valide alternative, alcune delle quali completamente offline e open source. Se sei curioso di scoprire nuovi strumenti, dai un'occhiata anche a Bruno, Hoppscotch e altri client API: potresti trovare la soluzione perfetta per le tue esigenze!
+>
+> Ti consiglio di leggere anche l'articolo ["Bruno vs Postman: un client API offline"](https://theredcode.it/devops/bruno-vs-postman-api-client/) scritto da [Serena Sensini](https://www.linkedin.com/in/serena-sensini/) e pubblicato su TheRedCode, per approfondire le differenze e scoprire nuove possibilità.
+
 ---
 
 🎁 **Premio per aver seguito la guida fino a qui!**
@@ -755,6 +760,7 @@ Ecco una raccolta di risorse e riferimenti utili per approfondire i temi trattat
 - [Autenticazione mTLS con Quarkus](https://open.spotify.com/episode/1vbl5exIO4m8Cekw9vwLeZ?si=a794bebee20c42a8) - pubblicato sul podcast di Antonio Musarra
 - [Liferay 7.2: Esempio di Two-Way SSL/TLS Mutual Authentication Client](https://www.dontesta.it/2020/02/25/liferay-7-2-esempio-di-two-way-ssl-tls-mutual-authentication-client/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
 - [RabbitMQ 4.1 mTLS e AMQP 1.0: Guida essenziale per sviluppatori](https://www.dontesta.it/2025/05/18/rabbitmq-4-1-mtls-e-amqp-1-0-guida-essenziale-per-sviluppatori/) - pubblicato sul blog di [Antonio Musarra](https://www.dontesta.it)
+- [Bruno vs Postman: un client API offline](https://theredcode.it/devops/bruno-vs-postman-api-client/) - pubblicato su TheRedCode.it
 
 ### Wikipedia
 
